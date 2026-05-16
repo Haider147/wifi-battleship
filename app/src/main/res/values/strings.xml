@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WiFi Battleship</string>
+    <string name="selecciona_conexion">Selecciona tipo de conexión</string>
+    <string name="jugar_wifi_direct">Jugar por WiFi Direct</string>
+    <string name="jugar_bluetooth">Jugar por Bluetooth</string>
+    <string name="configuracion">Configuración</string>
+    <string name="buscar_dispositivos">Buscar dispositivos</string>
+    <string name="dispositivos_encontrados">Dispositivos encontrados</string>
+    <string name="esperando_conexion">Esperando conexión…</string>
+    <string name="coloca_tus_barcos">Coloca tus barcos</string>
+    <string name="rotar">Rotar</string>
+    <string name="listo">Listo</string>
+    <string name="tu_tablero">Tu tablero</string>
+    <string name="tablero_enemigo">Tablero enemigo</string>
+    <string name="jugar_de_nuevo">Jugar de nuevo</string>
+    <string name="lobby">Lobby</string>
+    <string name="juego">Juego</string>
+    <string name="resultado">Resultado</string>
+    <string name="tamano_tablero">Tamaño del tablero</string>
+    <string name="configuracion_barcos">Configuración de barcos</string>
+    <string name="guardar">Guardar</string>
+</resources>
