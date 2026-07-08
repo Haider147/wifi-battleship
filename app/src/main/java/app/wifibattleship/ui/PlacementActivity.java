@@ -29,7 +29,9 @@ public class PlacementActivity extends AppCompatActivity {
     private BoardView boardView;
     private LinearLayout tray;
     private Button btnReady;
+    private Button btnRotate;
     private TextView tvStatus;
+    private TextView tvOrientation;
 
     private final List<Integer> traySizes = new ArrayList<>();
     private Orientation currentOrientation = Orientation.HORIZONTAL;
@@ -44,8 +46,9 @@ public class PlacementActivity extends AppCompatActivity {
         boardView = findViewById(R.id.boardView);
         tray = findViewById(R.id.tray);
         btnReady = findViewById(R.id.btnReady);
+        btnRotate = findViewById(R.id.btnRotate);
         tvStatus = findViewById(R.id.tvStatus);
-        Button btnRotate = findViewById(R.id.btnRotate);
+        tvOrientation = findViewById(R.id.tvOrientation);
 
         Board board = GameSession.get().getController().getMyBoard();
         boardView.setBoard(board);
@@ -56,6 +59,7 @@ public class PlacementActivity extends AppCompatActivity {
             traySizes.add(size);
         }
         refreshTray();
+        updateOrientationLabel();
 
         boardView.setOnShipDropListener(this::onShipDrop);
         boardView.setOnCellTapListener(this::onCellTap);
@@ -63,6 +67,7 @@ public class PlacementActivity extends AppCompatActivity {
         btnRotate.setOnClickListener(v -> {
             currentOrientation = currentOrientation.toggle();
             boardView.setDraggedOrientation(currentOrientation);
+            updateOrientationLabel();
         });
 
         btnReady.setOnClickListener(v -> onReady());
@@ -128,18 +133,30 @@ public class PlacementActivity extends AppCompatActivity {
             tray.addView(createChip(size));
         }
         btnReady.setEnabled(traySizes.isEmpty());
+        if (traySizes.isEmpty()) {
+            tvStatus.setText("Todos los barcos colocados. Pulsa «Listo».");
+        } else {
+            tvStatus.setText(R.string.placement_hint);
+        }
+    }
+
+    private void updateOrientationLabel() {
+        tvOrientation.setText(currentOrientation == Orientation.HORIZONTAL
+                ? "Orientación: Horizontal" : "Orientación: Vertical");
     }
 
     private View createChip(int size) {
         TextView chip = new TextView(this);
-        chip.setText(shipName(size));
-        chip.setPadding(dp(16), dp(12), dp(16), dp(12));
-        chip.setBackgroundResource(R.color.ship);
+        chip.setText(shipLabel(size));
+        chip.setPadding(dp(20), dp(14), dp(20), dp(14));
+        chip.setBackgroundResource(R.drawable.bg_ship_chip);
         chip.setTextColor(getColor(R.color.white));
+        chip.setTextSize(15);
+        chip.setAllCaps(false);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMarginEnd(dp(8));
+        lp.setMarginEnd(dp(10));
         chip.setLayoutParams(lp);
         chip.setOnTouchListener((v, event) -> onChipTouch(v, size, event));
         return chip;
@@ -194,6 +211,7 @@ public class PlacementActivity extends AppCompatActivity {
         }
         readySent = true;
         btnReady.setEnabled(false);
+        btnRotate.setEnabled(false);
         tvStatus.setText(R.string.placement_done);
         tray.setVisibility(View.GONE);
         GameSession.get().getController().setLocalReady();
@@ -205,7 +223,7 @@ public class PlacementActivity extends AppCompatActivity {
         finish();
     }
 
-    private String shipName(int size) {
+    private String shipLabel(int size) {
         switch (size) {
             case 4:
                 return getString(R.string.ship_4);

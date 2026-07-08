@@ -2,6 +2,7 @@ package app.wifibattleship.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +22,7 @@ public class GameActivity extends AppCompatActivity {
     private TextView tvTurn;
     private TextView tvConnection;
     private TextView tvLastResult;
+    private View turnBanner;
     private boolean ended = false;
     private boolean localWon = false;
 
@@ -34,6 +36,7 @@ public class GameActivity extends AppCompatActivity {
         tvTurn = findViewById(R.id.tvTurn);
         tvConnection = findViewById(R.id.tvConnection);
         tvLastResult = findViewById(R.id.tvLastResult);
+        turnBanner = findViewById(R.id.turnBanner);
 
         GameController controller = GameSession.get().getController();
         boardOwn.setBoard(controller.getMyBoard());
@@ -50,11 +53,7 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onTurnChanged(boolean myTurn) {
-                runOnUiThread(() -> {
-                    tvTurn.setText(myTurn ? R.string.your_turn : R.string.enemy_turn);
-                    tvTurn.setTextColor(getColor(myTurn ? R.color.primary : R.color.hit));
-                    boardEnemy.setEnabled(myTurn);
-                });
+                runOnUiThread(() -> updateTurnUI(myTurn));
             }
 
             @Override
@@ -73,25 +72,32 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onIncomingAttack(int x, int y) {
+                runOnUiThread(() -> boardOwn.setLastHit(x, y));
             }
 
             @Override
             public void onAttackResult(int x, int y, AttackResult result) {
                 runOnUiThread(() -> {
+                    boardEnemy.setLastHit(x, y);
                     boardEnemy.invalidate();
                     int resId;
+                    int color;
                     switch (result) {
                         case HIT:
                             resId = R.string.result_hit;
+                            color = R.color.hit;
                             break;
                         case SUNK:
                             resId = R.string.result_sunk;
+                            color = R.color.sunk;
                             break;
                         default:
                             resId = R.string.result_water;
+                            color = R.color.miss;
                             break;
                     }
                     tvLastResult.setText(getString(resId) + " — " + BoardView.cellLabel(x, y));
+                    tvLastResult.setTextColor(getColor(color));
                 });
             }
 
@@ -115,15 +121,30 @@ public class GameActivity extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                     if (!ended) {
                         ended = true;
+                        localWon = false;
                         goToResult();
                     }
                 });
             }
         });
 
-        tvTurn.setText(controller.isMyTurn() ? R.string.your_turn : R.string.enemy_turn);
-        tvTurn.setTextColor(getColor(controller.isMyTurn() ? R.color.primary : R.color.hit));
-        boardEnemy.setEnabled(controller.isMyTurn());
+        updateTurnUI(controller.isMyTurn());
+    }
+
+    private void updateTurnUI(boolean myTurn) {
+        tvTurn.setText(myTurn ? R.string.your_turn : R.string.enemy_turn);
+        tvTurn.setTextColor(getColor(R.color.white));
+        turnBanner.setBackgroundResource(myTurn
+                ? R.drawable.bg_turn_mine : R.drawable.bg_turn_enemy);
+        boardEnemy.setEnabled(myTurn);
+        boardEnemy.invalidate();
+        if (!myTurn) {
+            tvLastResult.setText("Esperando jugada del enemigo…");
+            tvLastResult.setTextColor(getColor(R.color.miss));
+        } else {
+            tvLastResult.setText("Toca una celda del tablero enemigo para atacar.");
+            tvLastResult.setTextColor(getColor(R.color.white));
+        }
     }
 
     private void onEnemyCellTap(int row, int col) {
@@ -151,7 +172,7 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (ended) {
+        if (ended && GameSession.get().getConnection() != null) {
             GameSession.get().getConnection().close();
         }
     }

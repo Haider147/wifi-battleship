@@ -5,31 +5,43 @@
     android:orientation="vertical"
     android:padding="8dp">
 
+    <FrameLayout
+        android:id="@+id/turnBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_turn_mine"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/tvTurn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/your_turn"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </FrameLayout>
+
     <TextView
         android:id="@+id/tvConnection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
+        android:layout_marginTop="4dp"
         android:text="@string/status_connected"
         android:textColor="@color/primary"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/tvTurn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="4dp"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textSize="13sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:gravity="center"
-        android:text="Tablero enemigo"
-        android:textSize="14sp"
+        android:text="▾ Tablero enemigo ▾"
+        android:textColor="@color/accent"
+        android:textSize="13sp"
         android:textStyle="bold" />
 
     <app.wifibattleship.ui.view.BoardView
@@ -45,15 +57,17 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_marginTop="4dp"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:gravity="center"
-        android:text="Tu tablero"
-        android:textSize="14sp"
+        android:text="▾ Tu tablero ▾"
+        android:textColor="@color/accent"
+        android:textSize="13sp"
         android:textStyle="bold" />
 
     <app.wifibattleship.ui.view.BoardView

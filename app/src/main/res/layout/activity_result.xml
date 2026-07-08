@@ -10,21 +10,27 @@
         android:id="@+id/tvResult"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="32sp"
+        android:padding="24dp"
+        android:textSize="36sp"
         android:textStyle="bold" />
 
     <Button
         android:id="@+id/btnAgain"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/play_again" />
+        android:layout_marginTop="48dp"
+        android:padding="14dp"
+        android:text="@string/play_again"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/btnExit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/exit" />
+        android:padding="14dp"
+        android:text="@string/exit"
+        android:textSize="16sp" />
 
 </LinearLayout>

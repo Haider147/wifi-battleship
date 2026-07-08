@@ -8,21 +8,41 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="32dp"
         android:gravity="center"
         android:text="@string/app_name"
         android:textColor="@color/primary"
-        android:textSize="28sp"
+        android:textSize="30sp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/tvWifiStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="4dp"
         android:gravity="center"
-        android:text="@string/status_connected"
-        android:textSize="16sp" />
+        android:text="Batalla naval por WiFi"
+        android:textColor="@color/accent"
+        android:textSize="14sp" />
+
+    <FrameLayout
+        android:id="@+id/wifiBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/bg_status_connected"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tvWifiStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/status_connected"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+    </FrameLayout>
 
     <TextView
         android:layout_width="match_parent"
@@ -30,6 +50,7 @@
         android:layout_marginTop="32dp"
         android:gravity="center"
         android:text="Selecciona tu rol"
+        android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -38,22 +59,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <RadioButton
             android:id="@+id/rbHost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
+            android:layout_marginEnd="32dp"
             android:checked="true"
-            android:text="@string/role_host" />
+            android:text="@string/role_host"
+            android:textSize="16sp" />
 
         <RadioButton
             android:id="@+id/rbClient"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/role_client" />
+            android:text="@string/role_client"
+            android:textSize="16sp" />
 
     </RadioGroup>
 
@@ -61,7 +84,10 @@
         android:id="@+id/btnStart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/start" />
+        android:layout_marginTop="36dp"
+        android:padding="14dp"
+        android:text="@string/start"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

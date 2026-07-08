@@ -11,7 +11,7 @@
         android:gravity="center"
         android:text="@string/placement_title"
         android:textColor="@color/primary"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <TextView
@@ -20,15 +20,28 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_marginTop="4dp"
-        android:text="Arrastra los barcos al tablero. Toca un barco para quitarlo."
+        android:text="@string/placement_hint"
+        android:textColor="@color/white"
         android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvOrientation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="2dp"
+        android:text="Orientación: Horizontal"
+        android:textColor="@color/accent"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
     <app.wifibattleship.ui.view.BoardView
         android:id="@+id/boardView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:layout_marginTop="4dp" />
 
     <LinearLayout
         android:id="@+id/tray"

@@ -2,6 +2,7 @@ package app.wifibattleship;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvWifiStatus;
     private Button btnStart;
     private RadioGroup rgRole;
+    private View wifiBanner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         tvWifiStatus = findViewById(R.id.tvWifiStatus);
         btnStart = findViewById(R.id.btnStart);
         rgRole = findViewById(R.id.rgRole);
+        wifiBanner = findViewById(R.id.wifiBanner);
 
         btnStart.setOnClickListener(v -> startGame());
     }
@@ -42,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
         boolean ready = NetUtils.isWifiReady(this);
         if (ready) {
             tvWifiStatus.setText(R.string.status_connected);
-            tvWifiStatus.setTextColor(getColor(R.color.primary));
+            wifiBanner.setBackgroundResource(R.drawable.bg_status_connected);
             btnStart.setEnabled(true);
         } else {
             tvWifiStatus.setText(R.string.err_wifi_off);
-            tvWifiStatus.setTextColor(getColor(R.color.hit));
+            wifiBanner.setBackgroundResource(R.drawable.bg_status_disconnected);
             btnStart.setEnabled(false);
         }
     }
