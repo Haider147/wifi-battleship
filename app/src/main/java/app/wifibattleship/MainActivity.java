@@ -2,12 +2,14 @@ package app.wifibattleship;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import app.wifibattleship.game.Role;
@@ -33,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
         wifiBanner = findViewById(R.id.wifiBanner);
 
         btnStart.setOnClickListener(v -> startGame());
+        wifiBanner.setOnClickListener(v -> {
+            if (!NetUtils.isWifiReady(this)) {
+                promptEnableWifi();
+            }
+        });
     }
 
     @Override
@@ -52,6 +59,16 @@ public class MainActivity extends AppCompatActivity {
             wifiBanner.setBackgroundResource(R.drawable.bg_status_disconnected);
             btnStart.setEnabled(false);
         }
+    }
+
+    private void promptEnableWifi() {
+        new AlertDialog.Builder(this)
+                .setTitle("WiFi desactivado")
+                .setMessage("El WiFi no está activado. ¿Deseas activarlo para continuar?")
+                .setPositiveButton("Activar WiFi", (d, w) ->
+                        startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)))
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private void startGame() {

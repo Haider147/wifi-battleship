@@ -44,4 +44,9 @@
     <string name="opponent_ready">Enemigo listo.</string>
     <string name="err_placement">Posición no válida.</string>
     <string name="all_placed">Coloca los 3 barcos para continuar.</string>
+
+    <string name="confirm_attack_title">Confirmar ataque</string>
+    <string name="confirm_attack_msg">¿Atacar celda %1$s?</string>
+    <string name="attack">Atacar</string>
+    <string name="already_attacked">Ya atacaste esa celda.</string>
 </resources>

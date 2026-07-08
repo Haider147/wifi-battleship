@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import app.wifibattleship.GameSession;
@@ -153,7 +154,17 @@ public class GameActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.enemy_turn, Toast.LENGTH_SHORT).show();
             return;
         }
-        controller.localAttack(row, col);
+        if (controller.getEnemyBoard().wasAlreadyAttacked(row, col)) {
+            Toast.makeText(this, R.string.already_attacked, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String label = BoardView.cellLabel(row, col);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.confirm_attack_title)
+                .setMessage(getString(R.string.confirm_attack_msg, label))
+                .setPositiveButton(R.string.attack, (d, w) -> controller.localAttack(row, col))
+                .setNegativeButton(R.string.exit, null)
+                .show();
     }
 
     private void goToResult() {

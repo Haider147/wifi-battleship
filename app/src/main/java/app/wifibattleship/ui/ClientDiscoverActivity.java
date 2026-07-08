@@ -3,12 +3,14 @@ package app.wifibattleship.ui;
 import android.content.Intent;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,6 +19,7 @@ import app.wifibattleship.GameSession;
 import app.wifibattleship.R;
 import app.wifibattleship.game.Role;
 import app.wifibattleship.net.GameConnection;
+import app.wifibattleship.net.NetUtils;
 import app.wifibattleship.net.NsdHelper;
 
 public class ClientDiscoverActivity extends AppCompatActivity {
@@ -53,6 +56,11 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         GameSession.reset();
         Role role = readRole();
         GameSession.get().setRole(role);
+
+        if (!NetUtils.isWifiReady(this)) {
+            promptEnableWifi();
+            return;
+        }
 
         startDiscovery();
     }
@@ -177,6 +185,19 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         Intent intent = new Intent(this, PlacementActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void promptEnableWifi() {
+        new AlertDialog.Builder(this)
+                .setTitle("WiFi desactivado")
+                .setMessage("El WiFi se ha desactivado. ¿Deseas activarlo para buscar partidas?")
+                .setPositiveButton("Activar WiFi", (d, w) -> {
+                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    finish();
+                })
+                .setNegativeButton("Salir", (d, w) -> finish())
+                .setCancelable(false)
+                .show();
     }
 
     @Override

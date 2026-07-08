@@ -33,11 +33,13 @@ public class NsdHelper {
     }
 
     private final NsdManager nsdManager;
+    private final Context context;
     private NsdManager.RegistrationListener registrationListener;
     private NsdManager.DiscoveryListener discoveryListener;
 
     public NsdHelper(Context context) {
-        this.nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
+        this.context = context.getApplicationContext();
+        this.nsdManager = (NsdManager) this.context.getSystemService(Context.NSD_SERVICE);
     }
 
     public void registerService(int port, String serviceName, RegistrationCallback callback) {
@@ -79,6 +81,7 @@ public class NsdHelper {
     }
 
     public void discoverServices(DiscoveryCallback callback) {
+        NetUtils.acquireMulticastLock(context);
         discoveryListener = new NsdManager.DiscoveryListener() {
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
@@ -120,6 +123,7 @@ public class NsdHelper {
             }
             discoveryListener = null;
         }
+        NetUtils.releaseMulticastLock();
     }
 
     public void resolveService(NsdServiceInfo serviceInfo, ResolveCallback callback) {

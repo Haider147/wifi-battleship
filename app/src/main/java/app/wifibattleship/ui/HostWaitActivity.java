@@ -2,9 +2,11 @@ package app.wifibattleship.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.net.ServerSocket;
@@ -37,6 +39,11 @@ public class HostWaitActivity extends AppCompatActivity {
         GameSession.reset();
         Role role = readRole();
         GameSession.get().setRole(role);
+
+        if (!NetUtils.isWifiReady(this)) {
+            promptEnableWifi();
+            return;
+        }
 
         startHosting();
     }
@@ -113,6 +120,19 @@ public class HostWaitActivity extends AppCompatActivity {
         Intent intent = new Intent(this, PlacementActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private void promptEnableWifi() {
+        new AlertDialog.Builder(this)
+                .setTitle("WiFi desactivado")
+                .setMessage("El WiFi se ha desactivado. ¿Deseas activarlo para crear la partida?")
+                .setPositiveButton("Activar WiFi", (d, w) -> {
+                    startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    finish();
+                })
+                .setNegativeButton("Salir", (d, w) -> finish())
+                .setCancelable(false)
+                .show();
     }
 
     @Override

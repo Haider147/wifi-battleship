@@ -19,6 +19,7 @@ import app.wifibattleship.game.GameConfig;
 public final class NetUtils {
 
     private static final AtomicInteger NAME_SEQ = new AtomicInteger(0);
+    private static WifiManager.MulticastLock multicastLock;
 
     private NetUtils() {
     }
@@ -97,5 +98,26 @@ public final class NetUtils {
     public static String generateServiceName() {
         int n = NAME_SEQ.incrementAndGet();
         return GameConfig.SERVICE_PREFIX + (n & 0xFFFF) + "-" + android.os.Build.MODEL;
+    }
+
+    public static synchronized void acquireMulticastLock(Context context) {
+        if (multicastLock != null && multicastLock.isHeld()) {
+            return;
+        }
+        WifiManager wm = (WifiManager) context.getApplicationContext()
+                .getSystemService(Context.WIFI_SERVICE);
+        if (wm == null) {
+            return;
+        }
+        multicastLock = wm.createMulticastLock("wbs-nsd");
+        multicastLock.setReferenceCounted(false);
+        multicastLock.acquire();
+    }
+
+    public static synchronized void releaseMulticastLock() {
+        if (multicastLock != null && multicastLock.isHeld()) {
+            multicastLock.release();
+        }
+        multicastLock = null;
     }
 }
