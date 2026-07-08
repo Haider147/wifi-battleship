@@ -35,4 +35,13 @@
     <string name="err_wifi_off">El WiFi no está activado. Actívalo para continuar.</string>
     <string name="err_connection">No se pudo conectar. Reintenta.</string>
     <string name="err_disconnected">Se perdió la conexión. Partida finalizada.</string>
+
+    <string name="ship_4">Acorazado (4)</string>
+    <string name="ship_3">Crucero (3)</string>
+    <string name="ship_2">Destructor (2)</string>
+    <string name="placement_hint">Arrastra los barcos al tablero. Toca un barco para quitarlo.</string>
+    <string name="placement_done">Barcos colocados. Esperando al enemigo…</string>
+    <string name="opponent_ready">Enemigo listo.</string>
+    <string name="err_placement">Posición no válida.</string>
+    <string name="all_placed">Coloca los 3 barcos para continuar.</string>
 </resources>

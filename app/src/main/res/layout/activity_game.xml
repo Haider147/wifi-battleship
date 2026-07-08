@@ -2,14 +2,65 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="8dp">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/tvConnection"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/game_title"
-        android:textSize="18sp" />
+        android:gravity="center"
+        android:text="@string/status_connected"
+        android:textColor="@color/primary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvTurn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:text="Tablero enemigo"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <app.wifibattleship.ui.view.BoardView
+        android:id="@+id/boardEnemy"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.1"
+        android:layout_gravity="center" />
+
+    <TextView
+        android:id="@+id/tvLastResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        android:textSize="14sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:text="Tu tablero"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <app.wifibattleship.ui.view.BoardView
+        android:id="@+id/boardOwn"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center" />
 
 </LinearLayout>

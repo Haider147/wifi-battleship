@@ -62,7 +62,7 @@ public class Board {
         return true;
     }
 
-    public boolean removeShipAt(int r, int c) {
+    public int removeShipAt(int r, int c) {
         Ship target = null;
         for (Ship s : ships) {
             if (s.contains(r, c)) {
@@ -71,13 +71,22 @@ public class Board {
             }
         }
         if (target == null) {
-            return false;
+            return 0;
         }
         for (int[] p : target.positions()) {
             grid[p[0]][p[1]] = Cell.WATER;
         }
         ships.remove(target);
-        return true;
+        return target.getSize();
+    }
+
+    public int getShipSizeAt(int r, int c) {
+        for (Ship s : ships) {
+            if (s.contains(r, c)) {
+                return s.getSize();
+            }
+        }
+        return 0;
     }
 
     public AttackResult receiveAttack(int r, int c) {
