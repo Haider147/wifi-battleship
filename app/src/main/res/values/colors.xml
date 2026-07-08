@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#1565C0</color>
-    <color name="primary_dark">#003c8f</color>
-    <color name="accent">#FF6F00</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 
-    <!-- Board cell states -->
-    <color name="cell_empty">#ECEFF1</color>
-    <color name="cell_ship">#1565C0</color>
-    <color name="cell_hit">#F44336</color>
-    <color name="cell_miss">#90A4AE</color>
-    <color name="cell_sunk">#B71C1C</color>
-    <color name="cell_border">#90A4AE</color>
+    <color name="water">#1565C0</color>
+    <color name="water_light">#1E88E5</color>
+    <color name="ship">#616161</color>
+    <color name="ship_border">#424242</color>
+    <color name="hit">#D32F2F</color>
+    <color name="miss">#90A4AE</color>
+    <color name="sunk">#212121</color>
+    <color name="grid_line">#0D47A1</color>
 
-    <color name="ic_launcher_background">#1565C0</color>
+    <color name="primary">#0D47A1</color>
+    <color name="primary_dark">#002171</color>
+    <color name="accent">#FFC107</color>
+
+    <color name="ic_launcher_background">#0D47A1</color>
 </resources>
