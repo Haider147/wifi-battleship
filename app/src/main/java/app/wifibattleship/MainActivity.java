@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import app.wifibattleship.game.Role;
 import app.wifibattleship.net.NetUtils;
+import app.wifibattleship.net.WifiStateMonitor;
 import app.wifibattleship.ui.ClientDiscoverActivity;
 import app.wifibattleship.ui.HostWaitActivity;
 
@@ -23,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private Button btnStart;
     private RadioGroup rgRole;
     private View wifiBanner;
+    private WifiStateMonitor wifiMonitor;
+    private boolean destroyed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
         wifiBanner = findViewById(R.id.wifiBanner);
 
         btnStart.setOnClickListener(v -> startGame());
+
+        wifiMonitor = new WifiStateMonitor(this, ready -> {
+            if (!destroyed) runOnUiThread(() -> updateWifiStatus(ready));
+        });
     }
 
     @Override
@@ -45,13 +52,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        updateWifiStatus();
+    protected void onStart() {
+        super.onStart();
+        if (wifiMonitor != null) wifiMonitor.register();
     }
 
-    private void updateWifiStatus() {
-        boolean ready = NetUtils.isWifiReady(this);
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (wifiMonitor != null) wifiMonitor.unregister();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateWifiStatus(NetUtils.isWifiReady(this));
+    }
+
+    @Override
+    protected void onDestroy() {
+        destroyed = true;
+        super.onDestroy();
+    }
+
+    private void updateWifiStatus(boolean ready) {
         if (ready) {
             tvWifiStatus.setText(R.string.status_connected);
             wifiBanner.setBackgroundResource(R.drawable.bg_status_connected);
