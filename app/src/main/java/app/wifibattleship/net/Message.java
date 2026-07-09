@@ -7,7 +7,10 @@ import org.json.JSONObject;
 
 public class Message {
 
+    public static final int PROTOCOL_VERSION = 1;
+
     private static final String TAG = "WbsMessage";
+    private static final String FIELD_VERSION = "v";
     private static final String FIELD_TYPE = "type";
     private static final String FIELD_X = "x";
     private static final String FIELD_Y = "y";
@@ -69,6 +72,10 @@ public class Message {
 
     public static Message fromJson(String json) throws JSONException {
         JSONObject o = new JSONObject(json);
+        int version = o.optInt(FIELD_VERSION, 0);
+        if (version != PROTOCOL_VERSION) {
+            throw new JSONException("Incompatible protocol version: " + version);
+        }
         MessageType type = MessageType.fromCode(o.optString(FIELD_TYPE));
         if (type == null) {
             throw new JSONException("Unknown message type: " + json);
@@ -91,6 +98,7 @@ public class Message {
     public String toJson() {
         JSONObject o = new JSONObject();
         try {
+            o.put(FIELD_VERSION, PROTOCOL_VERSION);
             o.put(FIELD_TYPE, type.code());
             if (x >= 0) o.put(FIELD_X, x);
             if (y >= 0) o.put(FIELD_Y, y);
