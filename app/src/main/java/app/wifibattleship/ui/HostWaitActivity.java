@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.net.ServerSocket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.wifibattleship.GameSession;
 import app.wifibattleship.R;
@@ -25,6 +26,10 @@ public class HostWaitActivity extends AppCompatActivity {
     private TextView tvStatus;
     private TextView tvInfo;
     private boolean accepted = false;
+    private boolean destroyed = false;
+    private Thread hostThread;
+    private NsdHelper nsd;
+    private final AtomicBoolean hostStarted = new AtomicBoolean(false);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +66,8 @@ public class HostWaitActivity extends AppCompatActivity {
     }
 
     private void startHosting() {
-        new Thread(() -> {
+        hostStarted.set(true);
+        hostThread = new Thread(() -> {
             try {
                 int port = NetUtils.bindFreePort();
                 ServerSocket server = new ServerSocket(port);
@@ -72,33 +78,51 @@ public class HostWaitActivity extends AppCompatActivity {
                 String name = NetUtils.generateServiceName();
                 GameSession.get().setServiceName(name);
 
-                runOnUiThread(() -> tvInfo.setText(
-                        getString(R.string.host_waiting) + "\nIP: " + ip + "\nPuerto: " + port));
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    tvInfo.setText(
+                            getString(R.string.host_waiting) + "\nIP: " + ip + "\nPuerto: " + port);
+                });
 
-                NsdHelper nsd = GameSession.get().getNsdHelper(this);
+                nsd = GameSession.get().getNsdHelper(this);
                 nsd.registerService(port, name, new NsdHelper.RegistrationCallback() {
                     @Override
                     public void onRegistered(String serviceName) {
-                        runOnUiThread(() -> tvInfo.append("\nServicio: " + serviceName));
+                        runOnUiThread(() -> {
+                            if (destroyed) return;
+                            tvInfo.append("\nServicio: " + serviceName);
+                        });
                     }
 
                     @Override
                     public void onFailed(String reason) {
-                        runOnUiThread(() -> tvStatus.setText(reason));
+                        runOnUiThread(() -> {
+                            if (destroyed) return;
+                            tvStatus.setText(reason);
+                        });
                     }
                 });
 
                 GameConnection.acceptAsHost(server, new GameConnection.ConnectCallback() {
                     @Override
                     public void onConnected(GameConnection connection) {
+                        if (destroyed) {
+                            connection.close();
+                            return;
+                        }
                         if (accepted) {
                             connection.close();
                             return;
                         }
                         accepted = true;
                         GameSession.get().setConnection(connection);
+                        GameSession.get().getController();
                         connection.start();
                         runOnUiThread(() -> {
+                            if (destroyed) {
+                                connection.close();
+                                return;
+                            }
                             tvStatus.setText(R.string.status_connected);
                             tvInfo.append("\nCliente conectado.");
                             goToPlacement();
@@ -107,13 +131,21 @@ public class HostWaitActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailed(String reason) {
-                        runOnUiThread(() -> tvStatus.setText(getString(R.string.err_connection) + "\n" + reason));
+                        runOnUiThread(() -> {
+                            if (destroyed) return;
+                            tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
+                        });
                     }
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> tvStatus.setText(getString(R.string.err_connection) + "\n" + e.getMessage()));
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    tvStatus.setText(getString(R.string.err_connection) + "\n" + e.getMessage());
+                });
             }
-        }, "wbs-host").start();
+        }, "wbs-host");
+        hostThread.setDaemon(true);
+        hostThread.start();
     }
 
     private void goToPlacement() {
@@ -136,10 +168,22 @@ public class HostWaitActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if (nsd != null && !accepted) {
+            nsd.unregisterService();
+        }
+    }
+
+    @Override
     protected void onDestroy() {
-        super.onDestroy();
+        destroyed = true;
         if (!accepted) {
+            if (nsd != null) {
+                nsd.unregisterService();
+            }
             GameSession.reset();
         }
+        super.onDestroy();
     }
 }

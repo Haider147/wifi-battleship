@@ -1,10 +1,13 @@
 package app.wifibattleship.net;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Message {
 
+    private static final String TAG = "WbsMessage";
     private static final String FIELD_TYPE = "type";
     private static final String FIELD_X = "x";
     private static final String FIELD_Y = "y";
@@ -28,6 +31,9 @@ public class Message {
     }
 
     public static Message attack(int x, int y) {
+        if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+            throw new IllegalArgumentException("coords out of board: " + x + "," + y);
+        }
         Message m = new Message(MessageType.ATTACK);
         m.x = x;
         m.y = y;
@@ -35,6 +41,9 @@ public class Message {
     }
 
     public static Message result(int x, int y, String result) {
+        if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+            throw new IllegalArgumentException("coords out of board: " + x + "," + y);
+        }
         Message m = new Message(MessageType.RESULT);
         m.x = x;
         m.y = y;
@@ -70,6 +79,12 @@ public class Message {
         if (o.has(FIELD_RESULT)) m.result = o.optString(FIELD_RESULT, null);
         if (o.has(FIELD_ROLE)) m.role = o.optString(FIELD_ROLE, null);
         if (o.has(FIELD_WINNER)) m.winner = o.optString(FIELD_WINNER, null);
+        if (m.x != -1 && (m.x < 0 || m.x >= 8)) {
+            throw new JSONException("x out of range: " + m.x);
+        }
+        if (m.y != -1 && (m.y < 0 || m.y >= 8)) {
+            throw new JSONException("y out of range: " + m.y);
+        }
         return m;
     }
 
@@ -82,7 +97,8 @@ public class Message {
             if (result != null) o.put(FIELD_RESULT, result);
             if (role != null) o.put(FIELD_ROLE, role);
             if (winner != null) o.put(FIELD_WINNER, winner);
-        } catch (JSONException ignored) {
+        } catch (JSONException e) {
+            Log.e(TAG, "toJson error", e);
         }
         return o.toString();
     }

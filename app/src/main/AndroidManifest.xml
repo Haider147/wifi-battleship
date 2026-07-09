@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -25,7 +27,8 @@
 
         <activity android:name=".ui.HostWaitActivity" android:exported="false" />
         <activity android:name=".ui.ClientDiscoverActivity" android:exported="false" />
-        <activity android:name=".ui.PlacementActivity" android:exported="false" />
+        <activity android:name=".ui.PlacementActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity android:name=".ui.GameActivity" android:exported="false" />
         <activity android:name=".ui.ResultActivity" android:exported="false" />
 

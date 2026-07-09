@@ -28,8 +28,11 @@ public class DiscoveredGameAdapter extends RecyclerView.Adapter<DiscoveredGameAd
     }
 
     public void add(NsdServiceInfo info) {
-        for (NsdServiceInfo existing : items) {
+        for (int i = 0; i < items.size(); i++) {
+            NsdServiceInfo existing = items.get(i);
             if (existing.getServiceName().equals(info.getServiceName())) {
+                items.set(i, info);
+                notifyItemChanged(i);
                 return;
             }
         }
@@ -48,8 +51,9 @@ public class DiscoveredGameAdapter extends RecyclerView.Adapter<DiscoveredGameAd
     }
 
     public void clear() {
+        int size = items.size();
         items.clear();
-        notifyDataSetChanged();
+        notifyItemRangeRemoved(0, size);
     }
 
     public boolean isEmpty() {
@@ -68,7 +72,11 @@ public class DiscoveredGameAdapter extends RecyclerView.Adapter<DiscoveredGameAd
     public void onBindViewHolder(@NonNull VH holder, int position) {
         NsdServiceInfo info = items.get(position);
         holder.tvName.setText(info.getServiceName());
-        holder.tvHost.setText(info.getHost() != null ? info.getHost().getHostAddress() : "…");
+        if (info.getHost() != null) {
+            holder.tvHost.setText(info.getHost().getHostAddress());
+        } else {
+            holder.tvHost.setText("resolviendo…");
+        }
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onGameClick(info);
@@ -79,6 +87,11 @@ public class DiscoveredGameAdapter extends RecyclerView.Adapter<DiscoveredGameAd
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return items.get(position).getServiceName().hashCode();
     }
 
     static class VH extends RecyclerView.ViewHolder {

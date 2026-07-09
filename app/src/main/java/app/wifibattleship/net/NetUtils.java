@@ -6,7 +6,6 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.text.format.Formatter;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -59,9 +58,14 @@ public final class NetUtils {
         if (ip == 0) {
             return getLocalIpv4();
         }
-        @SuppressWarnings("deprecation")
-        String dotted = Formatter.formatIpAddress(ip);
-        return dotted;
+        return formatIpv4(ip);
+    }
+
+    private static String formatIpv4(int ip) {
+        return (ip & 0xFF) + "."
+                + ((ip >> 8) & 0xFF) + "."
+                + ((ip >> 16) & 0xFF) + "."
+                + ((ip >> 24) & 0xFF);
     }
 
     private static String getLocalIpv4() {

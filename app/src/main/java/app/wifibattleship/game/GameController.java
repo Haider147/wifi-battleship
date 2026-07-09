@@ -26,7 +26,7 @@ public class GameController implements MessageListener {
 
         void onGameOver(boolean iWon);
 
-        void onDisconnected();
+        void onDisconnected(boolean voluntaryExit);
     }
 
     private final Board myBoard = new Board();
@@ -41,7 +41,7 @@ public class GameController implements MessageListener {
     private int enemySunkCount = 0;
 
     private MessageSender sender;
-    private Listener listener;
+    private volatile Listener listener;
 
     public void setRole(Role role) {
         this.myRole = role;
@@ -137,7 +137,7 @@ public class GameController implements MessageListener {
                 handleGameOver(msg.getWinner());
                 break;
             case BYE:
-                notifyDisconnected();
+                notifyDisconnected(true);
                 break;
             default:
                 break;
@@ -146,7 +146,7 @@ public class GameController implements MessageListener {
 
     @Override
     public void onDisconnected() {
-        notifyDisconnected();
+        notifyDisconnected(false);
     }
 
     private void maybeStartGame() {
@@ -175,6 +175,9 @@ public class GameController implements MessageListener {
     }
 
     private void applyFirstTurn(Role starter) {
+        if (phase != GamePhase.PLACEMENT) {
+            return;
+        }
         myTurn = (starter == myRole);
         phase = GamePhase.PLAYING;
         notifyPhaseChanged();
@@ -210,6 +213,9 @@ public class GameController implements MessageListener {
         if (result == null) {
             result = AttackResult.WATER;
         }
+        if (enemyBoard.wasAlreadyAttacked(x, y)) {
+            return;
+        }
         enemyBoard.markShotResult(x, y, result);
         notifyAttackResult(x, y, result);
         notifyEnemyBoardChanged();
@@ -223,7 +229,7 @@ public class GameController implements MessageListener {
                 return;
             }
         }
-        myTurn = false;
+        myTurn = true;
         notifyTurnChanged();
     }
 
@@ -267,61 +273,70 @@ public class GameController implements MessageListener {
     }
 
     private void notifyPhaseChanged() {
-        if (listener != null) {
-            listener.onPhaseChanged(phase);
+        Listener l = listener;
+        if (l != null) {
+            l.onPhaseChanged(phase);
         }
     }
 
     private void notifyTurnChanged() {
-        if (listener != null) {
-            listener.onTurnChanged(myTurn);
+        Listener l = listener;
+        if (l != null) {
+            l.onTurnChanged(myTurn);
         }
     }
 
     private void notifyOpponentReady() {
-        if (listener != null) {
-            listener.onOpponentReady();
+        Listener l = listener;
+        if (l != null) {
+            l.onOpponentReady();
         }
     }
 
     private void notifyMyBoardChanged() {
-        if (listener != null) {
-            listener.onMyBoardChanged();
+        Listener l = listener;
+        if (l != null) {
+            l.onMyBoardChanged();
         }
     }
 
     private void notifyEnemyBoardChanged() {
-        if (listener != null) {
-            listener.onEnemyBoardChanged();
+        Listener l = listener;
+        if (l != null) {
+            l.onEnemyBoardChanged();
         }
     }
 
     private void notifyIncomingAttack(int x, int y) {
-        if (listener != null) {
-            listener.onIncomingAttack(x, y);
+        Listener l = listener;
+        if (l != null) {
+            l.onIncomingAttack(x, y);
         }
     }
 
     private void notifyAttackResult(int x, int y, AttackResult result) {
-        if (listener != null) {
-            listener.onAttackResult(x, y, result);
+        Listener l = listener;
+        if (l != null) {
+            l.onAttackResult(x, y, result);
         }
     }
 
     private void notifyGameOver(boolean iWon) {
-        if (listener != null) {
-            listener.onGameOver(iWon);
+        Listener l = listener;
+        if (l != null) {
+            l.onGameOver(iWon);
         }
     }
 
-    private void notifyDisconnected() {
+    private void notifyDisconnected(boolean voluntaryExit) {
         if (phase == GamePhase.ENDED) {
             return;
         }
         phase = GamePhase.ENDED;
         notifyPhaseChanged();
-        if (listener != null) {
-            listener.onDisconnected();
+        Listener l = listener;
+        if (l != null) {
+            l.onDisconnected(voluntaryExit);
         }
     }
 }

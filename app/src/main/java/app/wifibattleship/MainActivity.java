@@ -35,11 +35,13 @@ public class MainActivity extends AppCompatActivity {
         wifiBanner = findViewById(R.id.wifiBanner);
 
         btnStart.setOnClickListener(v -> startGame());
-        wifiBanner.setOnClickListener(v -> {
-            if (!NetUtils.isWifiReady(this)) {
-                promptEnableWifi();
-            }
-        });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        rgRole.check(R.id.rbHost);
     }
 
     @Override
@@ -53,10 +55,12 @@ public class MainActivity extends AppCompatActivity {
         if (ready) {
             tvWifiStatus.setText(R.string.status_connected);
             wifiBanner.setBackgroundResource(R.drawable.bg_status_connected);
+            wifiBanner.setOnClickListener(null);
             btnStart.setEnabled(true);
         } else {
             tvWifiStatus.setText(R.string.err_wifi_off);
             wifiBanner.setBackgroundResource(R.drawable.bg_status_disconnected);
+            wifiBanner.setOnClickListener(v -> promptEnableWifi());
             btnStart.setEnabled(false);
         }
     }
@@ -76,7 +80,12 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.err_wifi_off, Toast.LENGTH_SHORT).show();
             return;
         }
-        boolean isHost = rgRole.getCheckedRadioButtonId() == R.id.rbHost;
+        int checkedId = rgRole.getCheckedRadioButtonId();
+        if (checkedId == -1) {
+            Toast.makeText(this, "Selecciona un rol.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        boolean isHost = checkedId == R.id.rbHost;
         Role role = isHost ? Role.HOST : Role.CLIENT;
         Intent intent;
         if (isHost) {

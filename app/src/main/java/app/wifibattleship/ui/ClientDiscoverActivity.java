@@ -33,6 +33,8 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     private DiscoveredGameAdapter adapter;
     private boolean connecting = false;
     private boolean connected = false;
+    private boolean destroyed = false;
+    private NsdHelper nsd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +79,22 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (nsd == null && !connected) {
+            startDiscovery();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (nsd != null && !connecting) {
+            nsd.stopDiscovery();
+        }
+    }
+
     private void startDiscovery() {
         adapter.clear();
         updateEmpty();
@@ -84,12 +102,15 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         tvStatus.setText(R.string.client_searching);
         btnRetry.setEnabled(false);
 
-        NsdHelper nsd = GameSession.get().getNsdHelper(this);
+        nsd = GameSession.get().getNsdHelper(this);
         nsd.stopDiscovery();
         nsd.discoverServices(new NsdHelper.DiscoveryCallback() {
             @Override
             public void onDiscoveryStarted() {
-                runOnUiThread(() -> btnRetry.setEnabled(true));
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    btnRetry.setEnabled(true);
+                });
             }
 
             @Override
@@ -99,6 +120,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
             @Override
             public void onServiceFound(NsdServiceInfo serviceInfo) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     adapter.add(serviceInfo);
                     updateEmpty();
                 });
@@ -107,6 +129,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
             @Override
             public void onServiceLost(NsdServiceInfo serviceInfo) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     adapter.remove(serviceInfo);
                     updateEmpty();
                 });
@@ -115,6 +138,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
             @Override
             public void onFailed(String reason) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     progressBar.setVisibility(View.GONE);
                     tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
                     btnRetry.setEnabled(true);
@@ -129,6 +153,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     }
 
     private void onGameSelected(NsdServiceInfo info) {
+        if (destroyed) return;
         if (connecting || connected) {
             return;
         }
@@ -136,21 +161,31 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         tvStatus.setText(R.string.status_connecting);
         progressBar.setVisibility(View.VISIBLE);
 
-        NsdHelper nsd = GameSession.get().getNsdHelper(this);
-        nsd.resolveService(info, new NsdHelper.ResolveCallback() {
+        NsdHelper helper = nsd;
+        helper.resolveService(info, new NsdHelper.ResolveCallback() {
             @Override
             public void onResolved(NsdServiceInfo resolved) {
+                if (destroyed) return;
                 String host = resolved.getHost().getHostAddress();
                 int port = resolved.getPort();
                 GameConnection.connectAsClient(host, port, new GameConnection.ConnectCallback() {
                     @Override
                     public void onConnected(GameConnection connection) {
+                        if (destroyed) {
+                            connection.close();
+                            return;
+                        }
                         connected = true;
                         GameSession.get().setConnection(connection);
+                        GameSession.get().getController();
                         connection.start();
                         runOnUiThread(() -> {
+                            if (destroyed) {
+                                connection.close();
+                                return;
+                            }
                             tvStatus.setText(R.string.status_connected);
-                            nsd.stopDiscovery();
+                            if (helper != null) helper.stopDiscovery();
                             goToPlacement();
                         });
                     }
@@ -159,6 +194,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
                     public void onFailed(String reason) {
                         connecting = false;
                         runOnUiThread(() -> {
+                            if (destroyed) return;
                             progressBar.setVisibility(View.GONE);
                             tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
                             Toast.makeText(ClientDiscoverActivity.this,
@@ -172,6 +208,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
             public void onFailed(String reason) {
                 connecting = false;
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     progressBar.setVisibility(View.GONE);
                     tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
                     Toast.makeText(ClientDiscoverActivity.this,
@@ -202,13 +239,14 @@ public class ClientDiscoverActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        destroyed = true;
         if (!connected) {
-            NsdHelper nsd = GameSession.get().getNsdHelper(this);
-            nsd.stopDiscovery();
-            if (!connected) {
-                GameSession.reset();
+            if (nsd != null) {
+                nsd.cancelResolve();
+                nsd.stopDiscovery();
             }
+            GameSession.reset();
         }
+        super.onDestroy();
     }
 }

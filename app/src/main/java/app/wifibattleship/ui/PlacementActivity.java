@@ -37,6 +37,8 @@ public class PlacementActivity extends AppCompatActivity {
     private Orientation currentOrientation = Orientation.HORIZONTAL;
     private boolean readySent = false;
     private boolean advanced = false;
+    private boolean destroyed = false;
+    private GameController.Listener controllerListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,13 +79,16 @@ public class PlacementActivity extends AppCompatActivity {
 
     private void wireController() {
         GameController controller = GameSession.get().getController();
-        controller.setListener(new GameController.Listener() {
+        controllerListener = new GameController.Listener() {
             @Override
             public void onPhaseChanged(GamePhase phase) {
-                if (phase == GamePhase.PLAYING && !advanced) {
-                    advanced = true;
-                    goToGame();
-                }
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    if (phase == GamePhase.PLAYING && !advanced) {
+                        advanced = true;
+                        goToGame();
+                    }
+                });
             }
 
             @Override
@@ -92,8 +97,11 @@ public class PlacementActivity extends AppCompatActivity {
 
             @Override
             public void onOpponentReady() {
-                runOnUiThread(() -> Toast.makeText(PlacementActivity.this,
-                        R.string.opponent_ready, Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    Toast.makeText(PlacementActivity.this,
+                            R.string.opponent_ready, Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -117,14 +125,16 @@ public class PlacementActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDisconnected() {
+            public void onDisconnected(boolean voluntaryExit) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     Toast.makeText(PlacementActivity.this, R.string.err_disconnected,
                             Toast.LENGTH_LONG).show();
                     finish();
                 });
             }
-        });
+        };
+        controller.setListener(controllerListener);
     }
 
     private void refreshTray() {
@@ -176,6 +186,7 @@ public class PlacementActivity extends AppCompatActivity {
     }
 
     private void onShipDrop(int shipSize, int row, int col, Orientation orientation) {
+        if (destroyed) return;
         Board board = GameSession.get().getController().getMyBoard();
         if (board.placeShip(shipSize, orientation, row, col)) {
             traySizes.remove(Integer.valueOf(shipSize));
@@ -188,6 +199,7 @@ public class PlacementActivity extends AppCompatActivity {
     }
 
     private void onCellTap(int row, int col) {
+        if (destroyed) return;
         if (readySent) {
             return;
         }
@@ -202,6 +214,7 @@ public class PlacementActivity extends AppCompatActivity {
     }
 
     private void onReady() {
+        if (destroyed) return;
         if (!traySizes.isEmpty()) {
             Toast.makeText(this, R.string.all_placed, Toast.LENGTH_SHORT).show();
             return;
@@ -236,5 +249,15 @@ public class PlacementActivity extends AppCompatActivity {
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    protected void onDestroy() {
+        destroyed = true;
+        GameController controller = GameSession.get().getController();
+        if (controller != null) {
+            controller.setListener(null);
+        }
+        super.onDestroy();
     }
 }

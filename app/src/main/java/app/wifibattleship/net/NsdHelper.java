@@ -36,6 +36,7 @@ public class NsdHelper {
     private final Context context;
     private NsdManager.RegistrationListener registrationListener;
     private NsdManager.DiscoveryListener discoveryListener;
+    private NsdManager.ResolveListener currentResolveListener;
 
     public NsdHelper(Context context) {
         this.context = context.getApplicationContext();
@@ -67,7 +68,11 @@ public class NsdHelper {
             public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
             }
         };
-        nsdManager.registerService(info, NsdManager.PROTOCOL_DNS_SD, registrationListener);
+        try {
+            nsdManager.registerService(info, NsdManager.PROTOCOL_DNS_SD, registrationListener);
+        } catch (IllegalArgumentException e) {
+            callback.onFailed("Registro NSD fallido: " + e.getMessage());
+        }
     }
 
     public void unregisterService() {
@@ -85,6 +90,7 @@ public class NsdHelper {
         discoveryListener = new NsdManager.DiscoveryListener() {
             @Override
             public void onStartDiscoveryFailed(String serviceType, int errorCode) {
+                NetUtils.releaseMulticastLock();
                 callback.onFailed("Inicio de búsqueda fallido: " + errorCode);
             }
 
@@ -99,6 +105,7 @@ public class NsdHelper {
 
             @Override
             public void onDiscoveryStopped(String serviceType) {
+                NetUtils.releaseMulticastLock();
                 callback.onDiscoveryStopped();
             }
 
@@ -112,7 +119,12 @@ public class NsdHelper {
                 callback.onServiceLost(serviceInfo);
             }
         };
-        nsdManager.discoverServices(GameConfig.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+        try {
+            nsdManager.discoverServices(GameConfig.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            NetUtils.releaseMulticastLock();
+            callback.onFailed("Inicio de búsqueda fallido: " + e.getMessage());
+        }
     }
 
     public void stopDiscovery() {
@@ -127,18 +139,45 @@ public class NsdHelper {
     }
 
     public void resolveService(NsdServiceInfo serviceInfo, ResolveCallback callback) {
+        cancelResolve();
         NsdManager.ResolveListener listener = new NsdManager.ResolveListener() {
             @Override
             public void onServiceResolved(NsdServiceInfo info) {
+                synchronized (NsdHelper.this) {
+                    if (currentResolveListener != this) return;
+                    currentResolveListener = null;
+                }
                 callback.onResolved(info);
             }
 
             @Override
             public void onResolveFailed(NsdServiceInfo info, int errorCode) {
+                synchronized (NsdHelper.this) {
+                    if (currentResolveListener != this) return;
+                    currentResolveListener = null;
+                }
                 callback.onFailed("Resolución fallida: " + errorCode);
             }
         };
-        nsdManager.resolveService(serviceInfo, listener);
+        synchronized (this) {
+            currentResolveListener = listener;
+        }
+        try {
+            nsdManager.resolveService(serviceInfo, listener);
+        } catch (IllegalArgumentException e) {
+            synchronized (this) {
+                currentResolveListener = null;
+            }
+            callback.onFailed("Resolución fallida: " + e.getMessage());
+        }
+    }
+
+    public void cancelResolve() {
+        NsdManager.ResolveListener listener;
+        synchronized (this) {
+            listener = currentResolveListener;
+            currentResolveListener = null;
+        }
     }
 
     public NsdManager getManager() {

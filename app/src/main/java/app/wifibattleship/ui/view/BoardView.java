@@ -35,6 +35,21 @@ public class BoardView extends View {
 
     private static final int SIZE = GameConfig.BOARD_SIZE;
 
+    private static final int COLOR_LINE = Color.parseColor("#0D47A1");
+    private static final int COLOR_BORDER = Color.parseColor("#002171");
+    private static final int COLOR_LABEL = Color.parseColor("#B0BEC5");
+    private static final int COLOR_WATER = Color.parseColor("#1565C0");
+    private static final int COLOR_SHIP_OWN = Color.parseColor("#546E7A");
+    private static final int COLOR_HIT = Color.parseColor("#D32F2F");
+    private static final int COLOR_MISS_CELL = Color.parseColor("#263238");
+    private static final int COLOR_SUNK = Color.parseColor("#212121");
+    private static final int COLOR_MISS_MARKER = Color.parseColor("#FFFFFF");
+    private static final int COLOR_HIT_MARKER = Color.parseColor("#FFEB3B");
+    private static final int COLOR_LAST_HIT = Color.parseColor("#FFC107");
+    private static final int COLOR_PREVIEW_OK = Color.argb(130, 76, 175, 80);
+    private static final int COLOR_PREVIEW_BAD = Color.argb(130, 244, 67, 54);
+    private static final int COLOR_DIM = Color.argb(90, 0, 0, 0);
+
     private Board board;
     private Mode mode = Mode.OWN;
 
@@ -79,14 +94,14 @@ public class BoardView extends View {
 
     private void init() {
         density = getResources().getDisplayMetrics().density;
-        linePaint.setColor(Color.parseColor("#0D47A1"));
+        linePaint.setColor(COLOR_LINE);
         linePaint.setStrokeWidth(Math.max(1f, density));
         linePaint.setStyle(Paint.Style.STROKE);
-        borderPaint.setColor(Color.parseColor("#002171"));
+        borderPaint.setColor(COLOR_BORDER);
         borderPaint.setStrokeWidth(2f * density);
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setAntiAlias(true);
-        labelPaint.setColor(Color.parseColor("#B0BEC5"));
+        labelPaint.setColor(COLOR_LABEL);
         labelPaint.setTextSize(11f * density);
         labelPaint.setTextAlign(Paint.Align.CENTER);
         previewPaint.setStyle(Paint.Style.FILL);
@@ -103,6 +118,12 @@ public class BoardView extends View {
 
     public void setMode(Mode mode) {
         this.mode = mode;
+        if (mode != Mode.PLACEMENT) {
+            setOnDragListener(null);
+            draggedSize = 0;
+            previewRow = -1;
+            previewCol = -1;
+        }
         invalidate();
     }
 
@@ -128,6 +149,10 @@ public class BoardView extends View {
     }
 
     public void setLastHit(int row, int col) {
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) {
+            clearLastHit();
+            return;
+        }
         this.lastHitRow = row;
         this.lastHitCol = col;
         invalidate();
@@ -204,20 +229,20 @@ public class BoardView extends View {
         float radius = cellSize * 0.18f;
         switch (cell) {
             case MISS:
-                markerPaint.setColor(Color.parseColor("#FFFFFF"));
+                markerPaint.setColor(COLOR_MISS_MARKER);
                 markerPaint.setStyle(Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, radius, markerPaint);
                 markerPaint.setStyle(Paint.Style.STROKE);
                 break;
             case HIT:
-                markerPaint.setColor(Color.parseColor("#FFEB3B"));
+                markerPaint.setColor(COLOR_HIT_MARKER);
                 markerPaint.setStyle(Paint.Style.STROKE);
                 float cross = cellSize * 0.28f;
                 canvas.drawLine(cx - cross, cy - cross, cx + cross, cy + cross, markerPaint);
                 canvas.drawLine(cx - cross, cy + cross, cx + cross, cy - cross, markerPaint);
                 break;
             case SUNK:
-                markerPaint.setColor(Color.parseColor("#FFEB3B"));
+                markerPaint.setColor(COLOR_HIT_MARKER);
                 markerPaint.setStyle(Paint.Style.STROKE);
                 float r = cellSize * 0.32f;
                 canvas.drawCircle(cx, cy, r, markerPaint);
@@ -247,7 +272,7 @@ public class BoardView extends View {
 
     private void drawPreview(Canvas canvas) {
         boolean valid = board.isValidPlacement(previewRow, previewCol, draggedSize, draggedOrientation);
-        previewPaint.setColor(valid ? Color.argb(130, 76, 175, 80) : Color.argb(130, 244, 67, 54));
+        previewPaint.setColor(valid ? COLOR_PREVIEW_OK : COLOR_PREVIEW_BAD);
         for (int i = 0; i < draggedSize; i++) {
             int r = draggedOrientation == Orientation.HORIZONTAL ? previewRow : previewRow + i;
             int c = draggedOrientation == Orientation.HORIZONTAL ? previewCol + i : previewCol;
@@ -263,16 +288,16 @@ public class BoardView extends View {
     private void drawLastHitHighlight(Canvas canvas) {
         float left = gridLeft + lastHitCol * cellSize;
         float top = gridTop + lastHitRow * cellSize;
-        borderPaint.setColor(Color.parseColor("#FFC107"));
+        borderPaint.setColor(COLOR_LAST_HIT);
         borderPaint.setStrokeWidth(3f * density);
         RectF rect = new RectF(left, top, left + cellSize, top + cellSize);
         canvas.drawRect(rect, borderPaint);
-        borderPaint.setColor(Color.parseColor("#002171"));
+        borderPaint.setColor(COLOR_BORDER);
         borderPaint.setStrokeWidth(2f * density);
     }
 
     private void drawDimOverlay(Canvas canvas) {
-        overlayPaint.setColor(Color.argb(90, 0, 0, 0));
+        overlayPaint.setColor(COLOR_DIM);
         RectF gridRect = new RectF(gridLeft, gridTop,
                 gridLeft + SIZE * cellSize, gridTop + SIZE * cellSize);
         canvas.drawRect(gridRect, overlayPaint);
@@ -281,20 +306,20 @@ public class BoardView extends View {
     private int colorFor(Cell cell) {
         switch (cell) {
             case WATER:
-                return Color.parseColor("#1565C0");
+                return COLOR_WATER;
             case SHIP:
                 if (mode == Mode.ENEMY) {
-                    return Color.parseColor("#1565C0");
+                    return COLOR_WATER;
                 }
-                return Color.parseColor("#546E7A");
+                return COLOR_SHIP_OWN;
             case HIT:
-                return Color.parseColor("#D32F2F");
+                return COLOR_HIT;
             case MISS:
-                return Color.parseColor("#263238");
+                return COLOR_MISS_CELL;
             case SUNK:
-                return Color.parseColor("#212121");
+                return COLOR_SUNK;
             default:
-                return Color.parseColor("#1565C0");
+                return COLOR_WATER;
         }
     }
 
@@ -314,6 +339,10 @@ public class BoardView extends View {
 
     public boolean handleDrag(DragEvent event) {
         if (mode != Mode.PLACEMENT) {
+            return false;
+        }
+        android.content.ClipDescription desc = event.getClipDescription();
+        if (desc != null && desc.getLabel() != null && !"ship".equals(desc.getLabel().toString())) {
             return false;
         }
         switch (event.getAction()) {
@@ -372,10 +401,6 @@ public class BoardView extends View {
         return cellSize;
     }
 
-    private int dp(int value) {
-        return (int) (value * density);
-    }
-
     @SuppressWarnings("unused")
     public void resetPreview() {
         previewRow = -1;
@@ -384,7 +409,18 @@ public class BoardView extends View {
         invalidate();
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        tapListener = null;
+        dropListener = null;
+        setOnDragListener(null);
+    }
+
     public static String cellLabel(int row, int col) {
+        if (col < 0 || col >= 26 || row < 0) {
+            return "?";
+        }
         return String.valueOf((char) ('A' + col)) + (row + 1);
     }
 }

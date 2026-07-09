@@ -1,11 +1,17 @@
 package app.wifibattleship.ui;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,6 +20,7 @@ import app.wifibattleship.R;
 import app.wifibattleship.game.AttackResult;
 import app.wifibattleship.game.GameController;
 import app.wifibattleship.game.GamePhase;
+import app.wifibattleship.net.NetUtils;
 import app.wifibattleship.ui.view.BoardView;
 
 public class GameActivity extends AppCompatActivity {
@@ -26,6 +33,9 @@ public class GameActivity extends AppCompatActivity {
     private View turnBanner;
     private boolean ended = false;
     private boolean localWon = false;
+    private boolean destroyed = false;
+    private GameController.Listener controllerListener;
+    private ConnectivityManager.NetworkCallback wifiCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,14 +57,17 @@ public class GameActivity extends AppCompatActivity {
 
         boardEnemy.setOnCellTapListener(this::onEnemyCellTap);
 
-        controller.setListener(new GameController.Listener() {
+        controllerListener = new GameController.Listener() {
             @Override
             public void onPhaseChanged(GamePhase phase) {
             }
 
             @Override
             public void onTurnChanged(boolean myTurn) {
-                runOnUiThread(() -> updateTurnUI(myTurn));
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    updateTurnUI(myTurn);
+                });
             }
 
             @Override
@@ -63,22 +76,32 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onMyBoardChanged() {
-                runOnUiThread(() -> boardOwn.invalidate());
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    boardOwn.invalidate();
+                });
             }
 
             @Override
             public void onEnemyBoardChanged() {
-                runOnUiThread(() -> boardEnemy.invalidate());
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    boardEnemy.invalidate();
+                });
             }
 
             @Override
             public void onIncomingAttack(int x, int y) {
-                runOnUiThread(() -> boardOwn.setLastHit(x, y));
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    boardOwn.setLastHit(x, y);
+                });
             }
 
             @Override
             public void onAttackResult(int x, int y, AttackResult result) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     boardEnemy.setLastHit(x, y);
                     boardEnemy.invalidate();
                     int resId;
@@ -105,6 +128,7 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onGameOver(boolean iWon) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     localWon = iWon;
                     if (!ended) {
                         ended = true;
@@ -114,22 +138,67 @@ public class GameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDisconnected() {
+            public void onDisconnected(boolean voluntaryExit) {
                 runOnUiThread(() -> {
+                    if (destroyed) return;
                     tvConnection.setText(R.string.status_disconnected);
                     tvConnection.setTextColor(getColor(R.color.hit));
-                    Toast.makeText(GameActivity.this, R.string.err_disconnected,
-                            Toast.LENGTH_LONG).show();
                     if (!ended) {
                         ended = true;
-                        localWon = false;
-                        goToResult();
+                        if (voluntaryExit) {
+                            localWon = false;
+                            goToResult();
+                        } else {
+                            Toast.makeText(GameActivity.this, R.string.err_disconnected,
+                                    Toast.LENGTH_LONG).show();
+                            localWon = false;
+                            goToResult();
+                        }
                     }
                 });
+            }
+        };
+        controller.setListener(controllerListener);
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                GameSession.get().getController().leave();
+                finish();
             }
         });
 
         updateTurnUI(controller.isMyTurn());
+
+        wifiCallback = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onLost(@NonNull Network network) {
+                runOnUiThread(() -> {
+                    if (destroyed) return;
+                    tvConnection.setText(R.string.status_disconnected);
+                    tvConnection.setTextColor(getColor(R.color.hit));
+                });
+            }
+        };
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            NetworkRequest req = new NetworkRequest.Builder()
+                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    .build();
+            try {
+                cm.registerNetworkCallback(req, wifiCallback);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        GameController controller = GameSession.get().getController();
+        if (controller != null) {
+            updateTurnUI(controller.isMyTurn());
+        }
     }
 
     private void updateTurnUI(boolean myTurn) {
@@ -149,6 +218,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void onEnemyCellTap(int row, int col) {
+        if (destroyed) return;
         GameController controller = GameSession.get().getController();
         if (!controller.isMyTurn()) {
             Toast.makeText(this, R.string.enemy_turn, Toast.LENGTH_SHORT).show();
@@ -175,16 +245,25 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        GameSession.get().getController().leave();
-        super.onBackPressed();
-    }
-
-    @Override
     protected void onDestroy() {
-        super.onDestroy();
-        if (ended && GameSession.get().getConnection() != null) {
+        destroyed = true;
+        if (wifiCallback != null) {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                try {
+                    cm.unregisterNetworkCallback(wifiCallback);
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+            wifiCallback = null;
+        }
+        GameController controller = GameSession.get().getController();
+        if (controller != null) {
+            controller.setListener(null);
+        }
+        if (GameSession.get().getConnection() != null) {
             GameSession.get().getConnection().close();
         }
+        super.onDestroy();
     }
 }

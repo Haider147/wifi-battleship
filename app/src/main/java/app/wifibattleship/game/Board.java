@@ -37,6 +37,9 @@ public class Board {
     }
 
     public boolean isValidPlacement(int row, int col, int size, Orientation orientation) {
+        if (size <= 0) {
+            return false;
+        }
         for (int i = 0; i < size; i++) {
             int r = orientation == Orientation.HORIZONTAL ? row : row + i;
             int c = orientation == Orientation.HORIZONTAL ? col + i : col;
@@ -111,11 +114,6 @@ public class Board {
             grid[r][c] = Cell.MISS;
             return AttackResult.WATER;
         } else {
-            if (cell == Cell.SUNK) {
-                return AttackResult.SUNK;
-            } else if (cell == Cell.HIT) {
-                return AttackResult.HIT;
-            }
             return AttackResult.WATER;
         }
     }
