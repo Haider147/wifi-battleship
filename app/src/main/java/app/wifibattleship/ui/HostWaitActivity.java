@@ -5,19 +5,22 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.wifibattleship.GameSession;
 import app.wifibattleship.R;
+import app.wifibattleship.game.GameConfig;
 import app.wifibattleship.game.Role;
 import app.wifibattleship.net.GameConnection;
 import app.wifibattleship.net.NetUtils;
-import app.wifibattleship.net.NsdHelper;
+import app.wifibattleship.net.WifiDirectHelper;
 
 public class HostWaitActivity extends AppCompatActivity {
 
@@ -28,8 +31,7 @@ public class HostWaitActivity extends AppCompatActivity {
     private boolean accepted = false;
     private boolean destroyed = false;
     private Thread hostThread;
-    private NsdHelper nsd;
-    private final AtomicBoolean hostStarted = new AtomicBoolean(false);
+    private WifiDirectHelper p2p;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +47,32 @@ public class HostWaitActivity extends AppCompatActivity {
         Role role = readRole();
         GameSession.get().setRole(role);
 
-        if (!NetUtils.isWifiReady(this)) {
+        if (!NetUtils.isWifiEnabled(this)) {
             promptEnableWifi();
             return;
         }
 
+        if (!P2pPermissions.granted(this)) {
+            P2pPermissions.request(this);
+            return;
+        }
+
         startHosting();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != P2pPermissions.REQUEST_CODE) {
+            return;
+        }
+        if (P2pPermissions.granted(this)) {
+            startHosting();
+        } else {
+            Toast.makeText(this, R.string.err_permission, Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
     private Role readRole() {
@@ -66,31 +88,34 @@ public class HostWaitActivity extends AppCompatActivity {
     }
 
     private void startHosting() {
-        hostStarted.set(true);
         hostThread = new Thread(() -> {
             try {
-                int port = NetUtils.bindFreePort();
-                ServerSocket server = new ServerSocket(port);
+                ServerSocket server;
+                try {
+                    server = new ServerSocket(GameConfig.SERVICE_PORT);
+                } catch (IOException busy) {
+                    server = new ServerSocket(0);
+                }
                 server.setReuseAddress(true);
+                final int port = server.getLocalPort();
                 GameSession.get().setServerSocket(server);
 
-                String ip = NetUtils.getWifiIpAddress(this);
                 String name = NetUtils.generateServiceName();
                 GameSession.get().setServiceName(name);
 
                 runOnUiThread(() -> {
                     if (destroyed) return;
-                    tvInfo.setText(
-                            getString(R.string.host_waiting) + "\nIP: " + ip + "\nPuerto: " + port);
+                    tvInfo.setText(getString(R.string.host_waiting)
+                            + "\nPartida: " + name + "\nPuerto: " + port);
                 });
 
-                nsd = GameSession.get().getNsdHelper(this);
-                nsd.registerService(port, name, new NsdHelper.RegistrationCallback() {
+                p2p = GameSession.get().getWifiDirectHelper(this);
+                p2p.startHost(port, name, new WifiDirectHelper.HostCallback() {
                     @Override
-                    public void onRegistered(String serviceName) {
+                    public void onGroupReady(String serviceName) {
                         runOnUiThread(() -> {
                             if (destroyed) return;
-                            tvInfo.append("\nServicio: " + serviceName);
+                            tvInfo.append("\n" + getString(R.string.host_group_ready));
                         });
                     }
 
@@ -157,7 +182,7 @@ public class HostWaitActivity extends AppCompatActivity {
     private void promptEnableWifi() {
         new AlertDialog.Builder(this)
                 .setTitle("WiFi desactivado")
-                .setMessage("El WiFi se ha desactivado. ¿Deseas activarlo para crear la partida?")
+                .setMessage("WiFi Direct necesita el WiFi encendido. ¿Deseas activarlo para crear la partida?")
                 .setPositiveButton("Activar WiFi", (d, w) -> {
                     startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                     finish();
@@ -168,20 +193,9 @@ public class HostWaitActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        if (nsd != null && !accepted) {
-            nsd.unregisterService();
-        }
-    }
-
-    @Override
     protected void onDestroy() {
         destroyed = true;
         if (!accepted) {
-            if (nsd != null) {
-                nsd.unregisterService();
-            }
             GameSession.reset();
         }
         super.onDestroy();

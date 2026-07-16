@@ -1,7 +1,6 @@
 package app.wifibattleship.ui;
 
 import android.content.Intent;
-import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -10,6 +9,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,9 +18,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import app.wifibattleship.GameSession;
 import app.wifibattleship.R;
 import app.wifibattleship.game.Role;
+import app.wifibattleship.net.DiscoveredGame;
 import app.wifibattleship.net.GameConnection;
 import app.wifibattleship.net.NetUtils;
-import app.wifibattleship.net.NsdHelper;
+import app.wifibattleship.net.WifiDirectHelper;
 
 public class ClientDiscoverActivity extends AppCompatActivity {
 
@@ -34,7 +35,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     private boolean connecting = false;
     private boolean connected = false;
     private boolean destroyed = false;
-    private NsdHelper nsd;
+    private WifiDirectHelper p2p;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +60,32 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         Role role = readRole();
         GameSession.get().setRole(role);
 
-        if (!NetUtils.isWifiReady(this)) {
+        if (!NetUtils.isWifiEnabled(this)) {
             promptEnableWifi();
             return;
         }
 
-        startDiscovery();
+        if (!P2pPermissions.granted(this)) {
+            P2pPermissions.request(this);
+            return;
+        }
+
+        startDiscoveryChecked();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != P2pPermissions.REQUEST_CODE) {
+            return;
+        }
+        if (P2pPermissions.granted(this)) {
+            startDiscoveryChecked();
+        } else {
+            Toast.makeText(this, R.string.err_permission, Toast.LENGTH_LONG).show();
+            finish();
+        }
     }
 
     private Role readRole() {
@@ -79,70 +100,46 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (nsd == null && !connected) {
-            startDiscovery();
+    /** En Android 8-12 el descubrimiento P2P exige la ubicación del sistema activa. */
+    private void startDiscoveryChecked() {
+        if (P2pPermissions.locationRequiredAndOff(this)) {
+            promptEnableLocation();
+            return;
         }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (nsd != null && !connecting) {
-            nsd.stopDiscovery();
-        }
+        startDiscovery();
     }
 
     private void startDiscovery() {
+        if (destroyed || connecting || connected) {
+            return;
+        }
         adapter.clear();
         updateEmpty();
         progressBar.setVisibility(View.VISIBLE);
         tvStatus.setText(R.string.client_searching);
         btnRetry.setEnabled(false);
 
-        nsd = GameSession.get().getNsdHelper(this);
-        nsd.stopDiscovery();
-        nsd.discoverServices(new NsdHelper.DiscoveryCallback() {
+        p2p = GameSession.get().getWifiDirectHelper(this);
+        p2p.discoverGames(new WifiDirectHelper.DiscoveryCallback() {
             @Override
             public void onDiscoveryStarted() {
-                runOnUiThread(() -> {
-                    if (destroyed) return;
-                    btnRetry.setEnabled(true);
-                });
+                if (destroyed) return;
+                btnRetry.setEnabled(true);
             }
 
             @Override
-            public void onDiscoveryStopped() {
-            }
-
-            @Override
-            public void onServiceFound(NsdServiceInfo serviceInfo) {
-                runOnUiThread(() -> {
-                    if (destroyed) return;
-                    adapter.add(serviceInfo);
-                    updateEmpty();
-                });
-            }
-
-            @Override
-            public void onServiceLost(NsdServiceInfo serviceInfo) {
-                runOnUiThread(() -> {
-                    if (destroyed) return;
-                    adapter.remove(serviceInfo);
-                    updateEmpty();
-                });
+            public void onGameFound(DiscoveredGame game) {
+                if (destroyed) return;
+                adapter.add(game);
+                updateEmpty();
             }
 
             @Override
             public void onFailed(String reason) {
-                runOnUiThread(() -> {
-                    if (destroyed) return;
-                    progressBar.setVisibility(View.GONE);
-                    tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
-                    btnRetry.setEnabled(true);
-                });
+                if (destroyed) return;
+                progressBar.setVisibility(View.GONE);
+                tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
+                btnRetry.setEnabled(true);
             }
         });
     }
@@ -152,7 +149,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         progressBar.setVisibility(adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
-    private void onGameSelected(NsdServiceInfo info) {
+    private void onGameSelected(DiscoveredGame game) {
         if (destroyed) return;
         if (connecting || connected) {
             return;
@@ -161,59 +158,56 @@ public class ClientDiscoverActivity extends AppCompatActivity {
         tvStatus.setText(R.string.status_connecting);
         progressBar.setVisibility(View.VISIBLE);
 
-        NsdHelper helper = nsd;
-        helper.resolveService(info, new NsdHelper.ResolveCallback() {
+        p2p.connectTo(game, new WifiDirectHelper.ConnectCallback() {
             @Override
-            public void onResolved(NsdServiceInfo resolved) {
+            public void onHostFound(String hostAddress) {
                 if (destroyed) return;
-                String host = resolved.getHost().getHostAddress();
-                int port = resolved.getPort();
-                GameConnection.connectAsClient(host, port, new GameConnection.ConnectCallback() {
-                    @Override
-                    public void onConnected(GameConnection connection) {
-                        if (destroyed) {
-                            connection.close();
-                            return;
-                        }
-                        connected = true;
-                        GameSession.get().setConnection(connection);
-                        GameSession.get().getController();
-                        connection.start();
-                        runOnUiThread(() -> {
-                            if (destroyed) {
-                                connection.close();
-                                return;
+                GameConnection.connectAsClient(hostAddress, game.getPort(),
+                        new GameConnection.ConnectCallback() {
+                            @Override
+                            public void onConnected(GameConnection connection) {
+                                if (destroyed) {
+                                    connection.close();
+                                    return;
+                                }
+                                connected = true;
+                                GameSession.get().setConnection(connection);
+                                GameSession.get().getController();
+                                connection.start();
+                                runOnUiThread(() -> {
+                                    if (destroyed) {
+                                        connection.close();
+                                        return;
+                                    }
+                                    tvStatus.setText(R.string.status_connected);
+                                    if (p2p != null) p2p.stopDiscovery();
+                                    goToPlacement();
+                                });
                             }
-                            tvStatus.setText(R.string.status_connected);
-                            if (helper != null) helper.stopDiscovery();
-                            goToPlacement();
-                        });
-                    }
 
-                    @Override
-                    public void onFailed(String reason) {
-                        connecting = false;
-                        runOnUiThread(() -> {
-                            if (destroyed) return;
-                            progressBar.setVisibility(View.GONE);
-                            tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
-                            Toast.makeText(ClientDiscoverActivity.this,
-                                    R.string.err_connection, Toast.LENGTH_SHORT).show();
+                            @Override
+                            public void onFailed(String reason) {
+                                connecting = false;
+                                runOnUiThread(() -> {
+                                    if (destroyed) return;
+                                    progressBar.setVisibility(View.GONE);
+                                    tvStatus.setText(getString(R.string.err_connection)
+                                            + "\n" + reason);
+                                    Toast.makeText(ClientDiscoverActivity.this,
+                                            R.string.err_connection, Toast.LENGTH_SHORT).show();
+                                });
+                            }
                         });
-                    }
-                });
             }
 
             @Override
             public void onFailed(String reason) {
                 connecting = false;
-                runOnUiThread(() -> {
-                    if (destroyed) return;
-                    progressBar.setVisibility(View.GONE);
-                    tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
-                    Toast.makeText(ClientDiscoverActivity.this,
-                            R.string.err_connection, Toast.LENGTH_SHORT).show();
-                });
+                if (destroyed) return;
+                progressBar.setVisibility(View.GONE);
+                tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
+                Toast.makeText(ClientDiscoverActivity.this,
+                        R.string.err_connection, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -227,9 +221,22 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     private void promptEnableWifi() {
         new AlertDialog.Builder(this)
                 .setTitle("WiFi desactivado")
-                .setMessage("El WiFi se ha desactivado. ¿Deseas activarlo para buscar partidas?")
+                .setMessage("WiFi Direct necesita el WiFi encendido. ¿Deseas activarlo para buscar partidas?")
                 .setPositiveButton("Activar WiFi", (d, w) -> {
                     startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                    finish();
+                })
+                .setNegativeButton("Salir", (d, w) -> finish())
+                .setCancelable(false)
+                .show();
+    }
+
+    private void promptEnableLocation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Ubicación desactivada")
+                .setMessage(getString(R.string.err_location_off))
+                .setPositiveButton("Activar ubicación", (d, w) -> {
+                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
                     finish();
                 })
                 .setNegativeButton("Salir", (d, w) -> finish())
@@ -241,9 +248,9 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     protected void onDestroy() {
         destroyed = true;
         if (!connected) {
-            if (nsd != null) {
-                nsd.cancelResolve();
-                nsd.stopDiscovery();
+            if (p2p != null) {
+                p2p.cancelConnect();
+                p2p.stopDiscovery();
             }
             GameSession.reset();
         }

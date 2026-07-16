@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        updateWifiStatus(NetUtils.isWifiReady(this));
+        updateWifiStatus(NetUtils.isWifiEnabled(this));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateWifiStatus(boolean ready) {
         if (ready) {
-            tvWifiStatus.setText(R.string.status_connected);
+            tvWifiStatus.setText(R.string.wifi_ready);
             wifiBanner.setBackgroundResource(R.drawable.bg_status_connected);
             wifiBanner.setOnClickListener(null);
             btnStart.setEnabled(true);
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private void promptEnableWifi() {
         new AlertDialog.Builder(this)
                 .setTitle("WiFi desactivado")
-                .setMessage("El WiFi no está activado. ¿Deseas activarlo para continuar?")
+                .setMessage("WiFi Direct necesita el WiFi encendido. ¿Deseas activarlo para continuar?")
                 .setPositiveButton("Activar WiFi", (d, w) ->
                         startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)))
                 .setNegativeButton("Cancelar", null)
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGame() {
-        if (!NetUtils.isWifiReady(this)) {
+        if (!NetUtils.isWifiEnabled(this)) {
             Toast.makeText(this, R.string.err_wifi_off, Toast.LENGTH_SHORT).show();
             return;
         }

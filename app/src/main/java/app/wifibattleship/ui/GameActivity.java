@@ -1,17 +1,17 @@
 package app.wifibattleship.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
+import android.content.IntentFilter;
+import android.net.NetworkInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,7 +20,6 @@ import app.wifibattleship.R;
 import app.wifibattleship.game.AttackResult;
 import app.wifibattleship.game.GameController;
 import app.wifibattleship.game.GamePhase;
-import app.wifibattleship.net.NetUtils;
 import app.wifibattleship.ui.view.BoardView;
 
 public class GameActivity extends AppCompatActivity {
@@ -35,7 +34,7 @@ public class GameActivity extends AppCompatActivity {
     private boolean localWon = false;
     private boolean destroyed = false;
     private GameController.Listener controllerListener;
-    private ConnectivityManager.NetworkCallback wifiCallback;
+    private BroadcastReceiver p2pReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,26 +169,19 @@ public class GameActivity extends AppCompatActivity {
 
         updateTurnUI(controller.isMyTurn());
 
-        wifiCallback = new ConnectivityManager.NetworkCallback() {
+        p2pReceiver = new BroadcastReceiver() {
             @Override
-            public void onLost(@NonNull Network network) {
-                runOnUiThread(() -> {
-                    if (destroyed) return;
+            public void onReceive(Context ctx, Intent intent) {
+                if (destroyed) return;
+                NetworkInfo info = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+                if (info != null && !info.isConnected()) {
                     tvConnection.setText(R.string.status_disconnected);
                     tvConnection.setTextColor(getColor(R.color.hit));
-                });
+                }
             }
         };
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        if (cm != null) {
-            NetworkRequest req = new NetworkRequest.Builder()
-                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                    .build();
-            try {
-                cm.registerNetworkCallback(req, wifiCallback);
-            } catch (IllegalArgumentException ignored) {
-            }
-        }
+        registerReceiver(p2pReceiver,
+                new IntentFilter(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION));
     }
 
     @Override
@@ -247,15 +239,12 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         destroyed = true;
-        if (wifiCallback != null) {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            if (cm != null) {
-                try {
-                    cm.unregisterNetworkCallback(wifiCallback);
-                } catch (IllegalArgumentException ignored) {
-                }
+        if (p2pReceiver != null) {
+            try {
+                unregisterReceiver(p2pReceiver);
+            } catch (IllegalArgumentException ignored) {
             }
-            wifiCallback = null;
+            p2pReceiver = null;
         }
         GameController controller = GameSession.get().getController();
         if (controller != null) {

@@ -7,7 +7,8 @@
     <string name="start">Iniciar</string>
 
     <string name="host_waiting">Esperando conexión del cliente…</string>
-    <string name="client_searching">Buscando partidas en la red…</string>
+    <string name="host_group_ready">Grupo WiFi Direct creado. Partida visible para otros jugadores.</string>
+    <string name="client_searching">Buscando partidas por WiFi Direct…</string>
     <string name="placement_title">Coloca tus barcos</string>
     <string name="game_title">Batalla naval</string>
     <string name="result_title">Fin de la partida</string>
@@ -32,7 +33,10 @@
     <string name="rotate">Rotar</string>
     <string name="ready">Listo</string>
 
-    <string name="err_wifi_off">El WiFi no está activado. Actívalo para continuar.</string>
+    <string name="wifi_ready">WiFi activo — WiFi Direct disponible</string>
+    <string name="err_wifi_off">El WiFi no está activado. WiFi Direct lo necesita para continuar.</string>
+    <string name="err_permission">Se necesita el permiso de dispositivos cercanos para crear o buscar partidas.</string>
+    <string name="err_location_off">El descubrimiento por WiFi Direct necesita la ubicación del sistema activada.</string>
     <string name="err_connection">No se pudo conectar. Reintenta.</string>
     <string name="err_disconnected">Se perdió la conexión. Partida finalizada.</string>
 

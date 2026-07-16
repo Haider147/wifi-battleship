@@ -1,13 +1,15 @@
 package app.wifibattleship.net;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pManager;
 
-import androidx.annotation.NonNull;
-
+/**
+ * Observa en vivo el estado de WiFi P2P mediante el broadcast (sticky)
+ * WIFI_P2P_STATE_CHANGED_ACTION: al registrarse entrega el estado actual.
+ */
 public final class WifiStateMonitor {
 
     public interface Listener {
@@ -16,56 +18,41 @@ public final class WifiStateMonitor {
 
     private final Context appContext;
     private final Listener listener;
-    private final ConnectivityManager.NetworkCallback callback;
+    private final BroadcastReceiver receiver;
+    private boolean registered = false;
 
     public WifiStateMonitor(Context context, Listener listener) {
         this.appContext = context.getApplicationContext();
         this.listener = listener;
-        this.callback = new ConnectivityManager.NetworkCallback() {
+        this.receiver = new BroadcastReceiver() {
             @Override
-            public void onAvailable(@NonNull Network network) {
-                notifyChange();
-            }
-
-            @Override
-            public void onLost(@NonNull Network network) {
-                notifyChange();
-            }
-
-            @Override
-            public void onCapabilitiesChanged(@NonNull Network network,
-                                               @NonNull NetworkCapabilities caps) {
-                notifyChange();
+            public void onReceive(Context ctx, Intent intent) {
+                int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE,
+                        WifiP2pManager.WIFI_P2P_STATE_DISABLED);
+                notifyChange(state == WifiP2pManager.WIFI_P2P_STATE_ENABLED);
             }
         };
     }
 
     public void register() {
-        ConnectivityManager cm = (ConnectivityManager) appContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return;
-        NetworkRequest req = new NetworkRequest.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .build();
-        try {
-            cm.registerNetworkCallback(req, callback);
-        } catch (IllegalArgumentException ignored) {
-        }
+        if (registered) return;
+        IntentFilter filter = new IntentFilter(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        appContext.registerReceiver(receiver, filter);
+        registered = true;
     }
 
     public void unregister() {
-        ConnectivityManager cm = (ConnectivityManager) appContext
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm == null) return;
+        if (!registered) return;
         try {
-            cm.unregisterNetworkCallback(callback);
+            appContext.unregisterReceiver(receiver);
         } catch (IllegalArgumentException ignored) {
         }
+        registered = false;
     }
 
-    private void notifyChange() {
+    private void notifyChange(boolean ready) {
         if (listener != null) {
-            listener.onWifiChanged(NetUtils.isWifiReady(appContext));
+            listener.onWifiChanged(ready);
         }
     }
 }

@@ -3,7 +3,7 @@ package app.wifibattleship;
 import app.wifibattleship.game.GameController;
 import app.wifibattleship.game.Role;
 import app.wifibattleship.net.GameConnection;
-import app.wifibattleship.net.NsdHelper;
+import app.wifibattleship.net.WifiDirectHelper;
 
 import java.net.ServerSocket;
 
@@ -14,7 +14,7 @@ public final class GameSession {
     private Role role;
     private GameConnection connection;
     private GameController controller;
-    private NsdHelper nsdHelper;
+    private WifiDirectHelper wifiDirectHelper;
     private ServerSocket serverSocket;
     private String serviceName;
 
@@ -63,11 +63,11 @@ public final class GameSession {
         return controller;
     }
 
-    public NsdHelper getNsdHelper(android.content.Context context) {
-        if (nsdHelper == null) {
-            nsdHelper = new NsdHelper(context.getApplicationContext());
+    public WifiDirectHelper getWifiDirectHelper(android.content.Context context) {
+        if (wifiDirectHelper == null) {
+            wifiDirectHelper = new WifiDirectHelper(context.getApplicationContext());
         }
-        return nsdHelper;
+        return wifiDirectHelper;
     }
 
     public ServerSocket getServerSocket() {
@@ -91,10 +91,9 @@ public final class GameSession {
             connection.close();
             connection = null;
         }
-        if (nsdHelper != null) {
-            nsdHelper.unregisterService();
-            nsdHelper.stopDiscovery();
-            nsdHelper = null;
+        if (wifiDirectHelper != null) {
+            wifiDirectHelper.teardown();
+            wifiDirectHelper = null;
         }
         if (serverSocket != null) {
             try {
