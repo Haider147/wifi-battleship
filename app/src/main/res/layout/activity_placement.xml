@@ -21,7 +21,7 @@
         android:gravity="center"
         android:layout_marginTop="4dp"
         android:text="@string/placement_hint"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:textSize="13sp" />
 
     <TextView
@@ -31,7 +31,7 @@
         android:gravity="center"
         android:layout_marginTop="2dp"
         android:text="Orientación: Horizontal"
-        android:textColor="@color/accent"
+        android:textColor="@color/primary"
         android:textSize="14sp"
         android:textStyle="bold" />
 

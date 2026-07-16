@@ -39,8 +39,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:gravity="center"
-        android:text="▾ Tablero enemigo ▾"
-        android:textColor="@color/accent"
+        android:text="Tablero enemigo"
+        android:textColor="@color/primary"
         android:textSize="13sp"
         android:textStyle="bold" />
 
@@ -65,8 +65,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:gravity="center"
-        android:text="▾ Tu tablero ▾"
-        android:textColor="@color/accent"
+        android:text="Tu tablero"
+        android:textColor="@color/primary"
         android:textSize="13sp"
         android:textStyle="bold" />
 

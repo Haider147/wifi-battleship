@@ -5,12 +5,12 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import app.wifibattleship.game.Role;
 import app.wifibattleship.net.NetUtils;
@@ -21,11 +21,14 @@ import app.wifibattleship.ui.HostWaitActivity;
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvWifiStatus;
+    private TextView tvWifiDesc;
     private Button btnStart;
-    private RadioGroup rgRole;
+    private View cardHost;
+    private View cardClient;
     private View wifiBanner;
     private WifiStateMonitor wifiMonitor;
     private boolean destroyed = false;
+    private boolean roleHost = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +36,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tvWifiStatus = findViewById(R.id.tvWifiStatus);
+        tvWifiDesc = findViewById(R.id.tvWifiDesc);
         btnStart = findViewById(R.id.btnStart);
-        rgRole = findViewById(R.id.rgRole);
+        cardHost = findViewById(R.id.cardHost);
+        cardClient = findViewById(R.id.cardClient);
         wifiBanner = findViewById(R.id.wifiBanner);
+
+        cardHost.setOnClickListener(v -> selectRole(true));
+        cardClient.setOnClickListener(v -> selectRole(false));
+        selectRole(true);
 
         btnStart.setOnClickListener(v -> startGame());
 
@@ -44,11 +53,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void selectRole(boolean host) {
+        roleHost = host;
+        cardHost.setSelected(host);
+        cardClient.setSelected(!host);
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        rgRole.check(R.id.rbHost);
+        selectRole(true);
     }
 
     @Override
@@ -77,13 +92,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateWifiStatus(boolean ready) {
         if (ready) {
-            tvWifiStatus.setText(R.string.wifi_ready);
-            wifiBanner.setBackgroundResource(R.drawable.bg_status_connected);
+            tvWifiStatus.setText(R.string.wifi_ok_title);
+            tvWifiStatus.setTextColor(ContextCompat.getColor(this, R.color.ok_green_dark));
+            tvWifiDesc.setText(R.string.wifi_ok_desc);
+            wifiBanner.setBackgroundResource(R.drawable.bg_status_card_ok);
             wifiBanner.setOnClickListener(null);
+            wifiBanner.setClickable(false);
             btnStart.setEnabled(true);
         } else {
-            tvWifiStatus.setText(R.string.err_wifi_off);
-            wifiBanner.setBackgroundResource(R.drawable.bg_status_disconnected);
+            tvWifiStatus.setText(R.string.wifi_off_title);
+            tvWifiStatus.setTextColor(ContextCompat.getColor(this, R.color.err_text));
+            tvWifiDesc.setText(R.string.wifi_off_desc);
+            wifiBanner.setBackgroundResource(R.drawable.bg_status_card_err);
             wifiBanner.setOnClickListener(v -> promptEnableWifi());
             btnStart.setEnabled(false);
         }
@@ -104,12 +124,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.err_wifi_off, Toast.LENGTH_SHORT).show();
             return;
         }
-        int checkedId = rgRole.getCheckedRadioButtonId();
-        if (checkedId == -1) {
-            Toast.makeText(this, "Selecciona un rol.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        boolean isHost = checkedId == R.id.rbHost;
+        boolean isHost = roleHost;
         Role role = isHost ? Role.HOST : Role.CLIENT;
         Intent intent;
         if (isHost) {

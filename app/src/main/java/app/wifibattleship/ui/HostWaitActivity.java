@@ -3,13 +3,16 @@ package app.wifibattleship.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -28,6 +31,9 @@ public class HostWaitActivity extends AppCompatActivity {
 
     private TextView tvStatus;
     private TextView tvInfo;
+    private TextView[] stepIcons;
+    private TextView[] stepTitles;
+    private ProgressBar[] stepSpins;
     private boolean accepted = false;
     private boolean destroyed = false;
     private Thread hostThread;
@@ -40,8 +46,16 @@ public class HostWaitActivity extends AppCompatActivity {
 
         tvStatus = findViewById(R.id.tvStatus);
         tvInfo = findViewById(R.id.tvInfo);
+        stepIcons = new TextView[]{findViewById(R.id.tvIcon1),
+                findViewById(R.id.tvIcon2), findViewById(R.id.tvIcon3)};
+        stepTitles = new TextView[]{findViewById(R.id.tvStep1),
+                findViewById(R.id.tvStep2), findViewById(R.id.tvStep3)};
+        stepSpins = new ProgressBar[]{findViewById(R.id.pbStep1),
+                findViewById(R.id.pbStep2), findViewById(R.id.pbStep3)};
         Button btnCancel = findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(v -> finish());
+
+        stepActive(0);
 
         GameSession.reset();
         Role role = readRole();
@@ -105,8 +119,7 @@ public class HostWaitActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (destroyed) return;
-                    tvInfo.setText(getString(R.string.host_waiting)
-                            + "\nPartida: " + name + "\nPuerto: " + port);
+                    tvInfo.setText("Partida: " + name + " — Puerto: " + port);
                 });
 
                 p2p = GameSession.get().getWifiDirectHelper(this);
@@ -115,7 +128,9 @@ public class HostWaitActivity extends AppCompatActivity {
                     public void onGroupReady(String serviceName) {
                         runOnUiThread(() -> {
                             if (destroyed) return;
-                            tvInfo.append("\n" + getString(R.string.host_group_ready));
+                            stepDone(0);
+                            stepDone(1);
+                            stepActive(2);
                         });
                     }
 
@@ -123,7 +138,7 @@ public class HostWaitActivity extends AppCompatActivity {
                     public void onFailed(String reason) {
                         runOnUiThread(() -> {
                             if (destroyed) return;
-                            tvStatus.setText(reason);
+                            showError(reason);
                         });
                     }
                 });
@@ -148,8 +163,7 @@ public class HostWaitActivity extends AppCompatActivity {
                                 connection.close();
                                 return;
                             }
-                            tvStatus.setText(R.string.status_connected);
-                            tvInfo.append("\nCliente conectado.");
+                            stepDone(2);
                             goToPlacement();
                         });
                     }
@@ -158,19 +172,43 @@ public class HostWaitActivity extends AppCompatActivity {
                     public void onFailed(String reason) {
                         runOnUiThread(() -> {
                             if (destroyed) return;
-                            tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
+                            showError(getString(R.string.err_connection) + "\n" + reason);
                         });
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (destroyed) return;
-                    tvStatus.setText(getString(R.string.err_connection) + "\n" + e.getMessage());
+                    showError(getString(R.string.err_connection) + "\n" + e.getMessage());
                 });
             }
         }, "wbs-host");
         hostThread.setDaemon(true);
         hostThread.start();
+    }
+
+    /** Paso en curso: oculta el número y muestra el indicador giratorio. */
+    private void stepActive(int i) {
+        stepIcons[i].setBackgroundResource(R.drawable.bg_step_active);
+        stepIcons[i].setText("");
+        stepSpins[i].setVisibility(View.VISIBLE);
+        stepTitles[i].setTextColor(ContextCompat.getColor(this, R.color.navy));
+    }
+
+    /** Paso completado: círculo verde con su número. */
+    private void stepDone(int i) {
+        stepSpins[i].setVisibility(View.GONE);
+        stepIcons[i].setBackgroundResource(R.drawable.bg_step_done);
+        stepIcons[i].setText(String.valueOf(i + 1));
+        stepTitles[i].setTextColor(ContextCompat.getColor(this, R.color.ok_green_dark));
+    }
+
+    private void showError(String message) {
+        for (ProgressBar spin : stepSpins) {
+            spin.setVisibility(View.GONE);
+        }
+        tvStatus.setText(message);
+        tvStatus.setVisibility(View.VISIBLE);
     }
 
     private void goToPlacement() {

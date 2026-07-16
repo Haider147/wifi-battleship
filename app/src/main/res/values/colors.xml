@@ -16,5 +16,14 @@
     <color name="primary_dark">#002171</color>
     <color name="accent">#FFC107</color>
 
-    <color name="ic_launcher_background">#0D47A1</color>
+    <color name="univalle_red">#E30512</color>
+    <color name="navy">#0E2A47</color>
+    <color name="text_muted">#5C6675</color>
+    <color name="text_muted_light">#8A93A1</color>
+    <color name="card_line">#E3E7EE</color>
+    <color name="line_strong">#C9D1DC</color>
+    <color name="ok_green">#1E8E3E</color>
+    <color name="ok_green_dark">#14632B</color>
+    <color name="err_text">#B3261E</color>
+    <color name="ic_launcher_background">#E30512</color>
 </resources>
