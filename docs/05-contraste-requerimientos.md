@@ -52,3 +52,4 @@ Detalle técnico completo en `docs/04-implementacion-wifi.md`.
 - **Salida voluntaria notificada** (mensaje `BYE` con el botón atrás) — el rival se entera de que abandonaste en vez de ver un error.
 - **Protección contra jugadas repetidas** (celda ya atacada) y contra doble conexión al host.
 - **Resaltado del último disparo** en ambos tableros y etiquetas de celda tipo A1–H8.
+- **Identidad visual de la Universidad del Valle** (julio 2026): rojo institucional, logo y franja de marca en todas las pantallas, tema claro fijo, tablero oceánico con barcos ilustrados y efectos de impacto/agua, y pantalla de resultado con veredicto semántico (verde/rojo).

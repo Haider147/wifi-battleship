@@ -2,79 +2,165 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:background="@drawable/bg_grid"
+    android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/turnBanner"
+    <!-- Franja roja compacta -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_turn_mine"
-        android:padding="10dp">
+        android:background="@color/univalle_red"
+        android:fitsSystemWindows="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="10dp">
+
+        <ImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/logo_app" />
 
         <TextView
-            android:id="@+id/tvTurn"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/your_turn"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:text="@string/game_title"
             android:textColor="@color/white"
-            android:textSize="18sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
-    </FrameLayout>
+        <TextView
+            android:id="@+id/tvConnection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/status_connected"
+            android:textColor="#D9FFFFFF"
+            android:textSize="11sp" />
 
-    <TextView
-        android:id="@+id/tvConnection"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="4dp"
-        android:text="@string/status_connected"
-        android:textColor="@color/primary"
-        android:textSize="13sp" />
+    </LinearLayout>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:gravity="center"
-        android:text="Tablero enemigo"
-        android:textColor="@color/primary"
-        android:textSize="13sp"
-        android:textStyle="bold" />
-
-    <app.wifibattleship.ui.view.BoardView
-        android:id="@+id/boardEnemy"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.1"
-        android:layout_gravity="center" />
-
-    <TextView
-        android:id="@+id/tvLastResult"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_marginTop="4dp"
-        android:textSize="14sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:gravity="center"
-        android:text="Tu tablero"
-        android:textColor="@color/primary"
-        android:textSize="13sp"
-        android:textStyle="bold" />
-
-    <app.wifibattleship.ui.view.BoardView
-        android:id="@+id/boardOwn"
+    <!-- Contenido -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_gravity="center" />
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp">
+
+        <!-- Banner de turno -->
+        <FrameLayout
+            android:id="@+id/turnBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_turn_mine"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tvTurn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/your_turn"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:letterSpacing="0.06"
+            android:text="@string/enemy_board"
+            android:textAllCaps="true"
+            android:textColor="@color/navy"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <!-- Tablero enemigo -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1.15">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_cell_normal"
+                android:padding="4dp">
+
+                <app.wifibattleship.ui.view.BoardView
+                    android:id="@+id/boardEnemy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </FrameLayout>
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tvLastResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:letterSpacing="0.06"
+            android:text="@string/own_board"
+            android:textAllCaps="true"
+            android:textColor="@color/navy"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <!-- Tu tablero -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_cell_normal"
+                android:padding="4dp">
+
+                <app.wifibattleship.ui.view.BoardView
+                    android:id="@+id/boardOwn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </FrameLayout>
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:paddingBottom="6dp"
+            android:text="@string/footer_univalle"
+            android:textColor="@color/text_muted_light"
+            android:textSize="10sp" />
+
+    </LinearLayout>
 
 </LinearLayout>

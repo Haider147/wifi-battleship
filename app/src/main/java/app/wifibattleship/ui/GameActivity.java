@@ -12,8 +12,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import app.wifibattleship.GameSession;
 import app.wifibattleship.R;
@@ -112,11 +113,11 @@ public class GameActivity extends AppCompatActivity {
                             break;
                         case SUNK:
                             resId = R.string.result_sunk;
-                            color = R.color.sunk;
+                            color = R.color.univalle_red;
                             break;
                         default:
                             resId = R.string.result_water;
-                            color = R.color.miss;
+                            color = R.color.text_muted;
                             break;
                     }
                     tvLastResult.setText(getString(resId) + " — " + BoardView.cellLabel(x, y));
@@ -141,7 +142,7 @@ public class GameActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (destroyed) return;
                     tvConnection.setText(R.string.status_disconnected);
-                    tvConnection.setTextColor(getColor(R.color.hit));
+                    tvConnection.setTextColor(getColor(R.color.accent));
                     if (!ended) {
                         ended = true;
                         if (voluntaryExit) {
@@ -176,7 +177,7 @@ public class GameActivity extends AppCompatActivity {
                 NetworkInfo info = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                 if (info != null && !info.isConnected()) {
                     tvConnection.setText(R.string.status_disconnected);
-                    tvConnection.setTextColor(getColor(R.color.hit));
+                    tvConnection.setTextColor(getColor(R.color.accent));
                 }
             }
         };
@@ -201,12 +202,11 @@ public class GameActivity extends AppCompatActivity {
         boardEnemy.setEnabled(myTurn);
         boardEnemy.invalidate();
         if (!myTurn) {
-            tvLastResult.setText("Esperando jugada del enemigo…");
-            tvLastResult.setTextColor(getColor(R.color.miss));
+            tvLastResult.setText(R.string.game_waiting_enemy);
         } else {
-            tvLastResult.setText("Toca una celda del tablero enemigo para atacar.");
-            tvLastResult.setTextColor(getColor(R.color.white));
+            tvLastResult.setText(R.string.game_hint_attack);
         }
+        tvLastResult.setTextColor(getColor(R.color.text_muted));
     }
 
     private void onEnemyCellTap(int row, int col) {
@@ -221,11 +221,11 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
         String label = BoardView.cellLabel(row, col);
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.confirm_attack_title)
                 .setMessage(getString(R.string.confirm_attack_msg, label))
                 .setPositiveButton(R.string.attack, (d, w) -> controller.localAttack(row, col))
-                .setNegativeButton(R.string.exit, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

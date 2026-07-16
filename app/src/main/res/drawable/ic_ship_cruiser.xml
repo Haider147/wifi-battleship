@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Crucero (3 celdas), visto desde arriba. Proa hacia la derecha. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="90dp"
+    android:height="30dp"
+    android:viewportWidth="90"
+    android:viewportHeight="30">
+    <!-- Casco -->
+    <path
+        android:fillColor="#414D59"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1.5"
+        android:pathData="M6,15 C6,9 11,6 19,6 L58,6 C70,7 79,11 84,15 C79,19 70,23 58,24 L19,24 C11,24 6,21 6,15 Z" />
+    <!-- Cubierta -->
+    <path
+        android:fillColor="#525E6A"
+        android:pathData="M12,15 C12,11.5 15,10 20,10 L56,10 C64,10.7 71,12.5 75,15 C71,17.5 64,19.3 56,20 L20,20 C15,20 12,18.5 12,15 Z" />
+    <!-- Puente -->
+    <path
+        android:fillColor="#6E7A86"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1"
+        android:pathData="M42,10 L58,10 L58,20 L42,20 Z" />
+    <!-- Canon de proa -->
+    <path
+        android:fillColor="#232C35"
+        android:pathData="M24,14 L36,14 L36,16 L24,16 Z" />
+    <path
+        android:fillColor="#2B3540"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1"
+        android:pathData="M20,15 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0 Z" />
+    <!-- Canon de popa -->
+    <path
+        android:fillColor="#2B3540"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1"
+        android:pathData="M65.2,15 a2.8,2.8 0 1,0 5.6,0 a2.8,2.8 0 1,0 -5.6,0 Z" />
+</vector>

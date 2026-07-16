@@ -17,6 +17,7 @@
     <color name="accent">#FFC107</color>
 
     <color name="univalle_red">#E30512</color>
+    <color name="univalle_red_dark">#A80410</color>
     <color name="navy">#0E2A47</color>
     <color name="text_muted">#5C6675</color>
     <color name="text_muted_light">#8A93A1</color>

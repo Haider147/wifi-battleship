@@ -10,7 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -218,7 +218,7 @@ public class HostWaitActivity extends AppCompatActivity {
     }
 
     private void promptEnableWifi() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("WiFi desactivado")
                 .setMessage("WiFi Direct necesita el WiFi encendido. ¿Deseas activarlo para crear la partida?")
                 .setPositiveButton("Activar WiFi", (d, w) -> {

@@ -28,6 +28,15 @@ Resumen de la funcionalidad de **WiFi BattleShip**, organizada por capa. Las rut
 | «Jugar de nuevo» o salir al terminar | `ui/ResultActivity` |
 | Estado de conexión en pantalla y manejo de desconexión (rival se va o se cae la red) | `ui/GameActivity` |
 | Salir de la partida con el botón atrás avisando al rival (mensaje BYE) | `ui/GameActivity` (OnBackPressedCallback) |
+| Tablero oceánico con barcos ilustrados: fogonazo en impacto, ondas en agua, parche oscuro al hundir | `ui/view/BoardView` + `drawable/ic_ship_*` |
+| Bandeja de barcos con ilustración y nombre (Acorazado / Crucero / Destructor) | `ui/PlacementActivity.createChip` |
+| Pantalla de resultado con veredicto (franja verde al ganar, roja al perder) y flota hundida | `ui/ResultActivity` + `activity_result.xml` |
+
+## Presentación y marca (`ui/` + `res/`)
+
+- Identidad **Universidad del Valle**: rojo institucional `#E30512` (`univalle_red`) como color primario, franja roja superior con logo y título en cada pantalla, fondo con retícula (`bg_grid`), tarjetas blancas redondeadas y pie «Universidad del Valle».
+- **Tema claro fijo** (`Theme.MaterialComponents.Light.NoActionBar` + `forceDarkAllowed=false`): la app no cambia con el modo oscuro del sistema.
+- **Diálogos Material** (`MaterialAlertDialogBuilder`) con estilo de marca: esquinas redondeadas, título navy y botón principal rojo (`themes.xml`).
 
 ## Lógica del juego (`game/`)
 

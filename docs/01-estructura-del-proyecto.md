@@ -88,3 +88,10 @@ El historial de commits refleja el orden real de desarrollo:
 - Se reemplazó el descubrimiento NSD (mDNS en red local) por **WiFi Direct** (`WifiP2pManager`) para cumplir literalmente el requerimiento RF6: el Host crea el grupo P2P y anuncia la partida por DNS-SD sobre P2P; el Cliente se une al grupo y conecta el mismo socket TCP contra la IP del *group owner*.
 - Se añadieron los permisos en tiempo de ejecución (`NEARBY_WIFI_DEVICES` / `ACCESS_FINE_LOCATION`) — ver `06-plan-wifi-direct.md`.
 - La lógica del juego y el protocolo de mensajes no cambiaron.
+
+### Paso 10 — Rediseño visual con la marca Univalle (julio 2026)
+- **Identidad institucional** en todas las pantallas: rojo Univalle `#E30512` como color primario, logo (emblema + barco) en la franja roja superior con el título en blanco, fondo con retícula de tablero (`bg_grid`), tarjetas blancas redondeadas y pie «Universidad del Valle». Tema claro fijo: la app no sigue el modo oscuro del sistema.
+- **`BoardView` rediseñado**: agua con degradado azul y oleaje sutil, coordenadas A–H / 1–8, barcos ilustrados vistos desde arriba (vectores `ic_ship_battleship/cruiser/destroyer` según tamaño), fogonazo con chispas en los impactos, ondas concéntricas en los tiros al agua y parche oscuro sobre los barcos enemigos hundidos. La previsualización de colocación muestra el barco «fantasma» (rojo si la posición es inválida).
+- **Pantallas rediseñadas**: primero Host y Cliente (`bf75833`), luego Colocación (bandeja de barcos con ilustración y nombre), Juego (dos tableros en tarjeta, banner de turno navy con filo rojo) y Resultado (tarjeta de veredicto con franja verde/roja y la flota hundida).
+- **Diálogos** migrados de `AlertDialog` a `MaterialAlertDialogBuilder` con estilos de marca (tarjeta redondeada, título navy, acción principal roja).
+- La lógica del juego y la capa de red no cambiaron.

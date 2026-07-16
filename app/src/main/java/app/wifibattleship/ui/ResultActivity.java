@@ -2,6 +2,7 @@ package app.wifibattleship.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -24,7 +25,13 @@ public class ResultActivity extends AppCompatActivity {
 
         TextView tvResult = findViewById(R.id.tvResult);
         tvResult.setText(iWon ? R.string.win : R.string.lose);
-        tvResult.setTextColor(getColor(iWon ? R.color.primary : R.color.hit));
+
+        TextView tvResultDesc = findViewById(R.id.tvResultDesc);
+        tvResultDesc.setText(iWon ? R.string.win_desc : R.string.lose_desc);
+
+        View strip = findViewById(R.id.vVerdictStrip);
+        strip.setBackgroundResource(iWon
+                ? R.drawable.bg_verdict_win : R.drawable.bg_verdict_lose);
 
         Button btnAgain = findViewById(R.id.btnAgain);
         Button btnExit = findViewById(R.id.btnExit);

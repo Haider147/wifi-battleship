@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void promptEnableWifi() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("WiFi desactivado")
                 .setMessage("WiFi Direct necesita el WiFi encendido. ¿Deseas activarlo para continuar?")
                 .setPositiveButton("Activar WiFi", (d, w) ->

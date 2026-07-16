@@ -10,7 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -219,7 +219,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     }
 
     private void promptEnableWifi() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("WiFi desactivado")
                 .setMessage("WiFi Direct necesita el WiFi encendido. ¿Deseas activarlo para buscar partidas?")
                 .setPositiveButton("Activar WiFi", (d, w) -> {
@@ -232,7 +232,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
     }
 
     private void promptEnableLocation() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("Ubicación desactivada")
                 .setMessage(getString(R.string.err_location_off))
                 .setPositiveButton("Activar ubicación", (d, w) -> {

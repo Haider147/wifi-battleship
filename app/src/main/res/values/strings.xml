@@ -30,8 +30,13 @@
     <string name="join">Unirse</string>
     <string name="retry">Reintentar</string>
     <string name="placement_title">Coloca tus barcos</string>
+    <string name="placement_sub">Arrastra tus barcos al tablero</string>
     <string name="game_title">Batalla naval</string>
     <string name="result_title">Fin de la partida</string>
+    <string name="enemy_board">Tablero enemigo</string>
+    <string name="own_board">Tu tablero</string>
+    <string name="game_hint_attack">Toca una celda del tablero enemigo para atacar.</string>
+    <string name="game_waiting_enemy">Esperando jugada del enemigo…</string>
 
     <string name="status_connected">Conexión: conectado</string>
     <string name="status_disconnected">Conexión: desconectado</string>
@@ -46,10 +51,13 @@
 
     <string name="win">¡Ganaste!</string>
     <string name="lose">Perdiste</string>
+    <string name="win_desc">Hundiste los 3 barcos enemigos</string>
+    <string name="lose_desc">Tu flota fue hundida</string>
     <string name="play_again">Nueva partida</string>
     <string name="exit">Salir</string>
 
     <string name="confirm">Confirmar</string>
+    <string name="cancel">Cancelar</string>
     <string name="rotate">Rotar</string>
     <string name="ready">Listo</string>
 

@@ -2,10 +2,13 @@ package app.wifibattleship.ui;
 
 import android.content.ClipData;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -156,20 +159,48 @@ public class PlacementActivity extends AppCompatActivity {
     }
 
     private View createChip(int size) {
-        TextView chip = new TextView(this);
-        chip.setText(shipLabel(size));
-        chip.setPadding(dp(20), dp(14), dp(20), dp(14));
-        chip.setBackgroundResource(R.drawable.bg_ship_chip);
-        chip.setTextColor(getColor(R.color.white));
-        chip.setTextSize(15);
-        chip.setAllCaps(false);
+        LinearLayout chip = new LinearLayout(this);
+        chip.setOrientation(LinearLayout.VERTICAL);
+        chip.setGravity(Gravity.CENTER_HORIZONTAL);
+        chip.setBackgroundResource(R.drawable.bg_cell_normal);
+        chip.setPadding(dp(12), dp(9), dp(12), dp(8));
+
+        ImageView art = new ImageView(this);
+        art.setImageResource(shipArtRes(size));
+        art.setContentDescription(shipLabel(size));
+        art.setBackgroundResource(R.drawable.bg_fleet_chip);
+        art.setPadding(dp(3), dp(2), dp(3), dp(2));
+        chip.addView(art, new LinearLayout.LayoutParams(dp(size * 22 + 6), dp(24)));
+
+        TextView label = new TextView(this);
+        label.setText(shipLabel(size));
+        label.setTextColor(getColor(R.color.navy));
+        label.setTextSize(11);
+        label.setTypeface(label.getTypeface(), Typeface.BOLD);
+        LinearLayout.LayoutParams labelLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        labelLp.topMargin = dp(3);
+        chip.addView(label, labelLp);
+
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMarginEnd(dp(10));
+        lp.setMarginEnd(dp(8));
         chip.setLayoutParams(lp);
         chip.setOnTouchListener((v, event) -> onChipTouch(v, size, event));
         return chip;
+    }
+
+    private int shipArtRes(int size) {
+        switch (size) {
+            case 4:
+                return R.drawable.ic_ship_battleship;
+            case 3:
+                return R.drawable.ic_ship_cruiser;
+            default:
+                return R.drawable.ic_ship_destroyer;
+        }
     }
 
     @android.annotation.SuppressLint("ClickableViewAccessibility")

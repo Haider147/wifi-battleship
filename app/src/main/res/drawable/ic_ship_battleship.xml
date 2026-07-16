@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Acorazado (4 celdas), visto desde arriba. Proa hacia la derecha. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="30dp"
+    android:viewportWidth="120"
+    android:viewportHeight="30">
+    <!-- Casco -->
+    <path
+        android:fillColor="#414D59"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1.5"
+        android:pathData="M6,15 C6,9 11,6 19,6 L84,6 C98,7 108,11 114,15 C108,19 98,23 84,24 L19,24 C11,24 6,21 6,15 Z" />
+    <!-- Cubierta -->
+    <path
+        android:fillColor="#525E6A"
+        android:pathData="M12,15 C12,11.5 15,10 20,10 L82,10 C92,10.7 100,12.5 105,15 C100,17.5 92,19.3 82,20 L20,20 C15,20 12,18.5 12,15 Z" />
+    <!-- Puente -->
+    <path
+        android:fillColor="#6E7A86"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1"
+        android:pathData="M52,9.5 L72,9.5 L72,20.5 L52,20.5 Z" />
+    <!-- Chimenea -->
+    <path
+        android:fillColor="#232C35"
+        android:pathData="M59.8,15 a2.2,2.2 0 1,0 4.4,0 a2.2,2.2 0 1,0 -4.4,0 Z" />
+    <!-- Canon de proa -->
+    <path
+        android:fillColor="#232C35"
+        android:pathData="M32,13.9 L46,13.9 L46,16.1 L32,16.1 Z" />
+    <path
+        android:fillColor="#2B3540"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1"
+        android:pathData="M27.4,15 a4.6,4.6 0 1,0 9.2,0 a4.6,4.6 0 1,0 -9.2,0 Z" />
+    <!-- Canon de popa -->
+    <path
+        android:fillColor="#232C35"
+        android:pathData="M92,13.9 L105,13.9 L105,16.1 L92,16.1 Z" />
+    <path
+        android:fillColor="#2B3540"
+        android:strokeColor="#232C35"
+        android:strokeWidth="1"
+        android:pathData="M87.8,15 a4.2,4.2 0 1,0 8.4,0 a4.2,4.2 0 1,0 -8.4,0 Z" />
+</vector>

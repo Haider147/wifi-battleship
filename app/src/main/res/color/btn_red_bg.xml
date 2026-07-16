@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo del botón rojo principal: gris cuando está deshabilitado. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="false" android:color="@color/line_strong" />
+    <item android:color="@color/univalle_red" />
+</selector>
