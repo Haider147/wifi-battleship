@@ -412,10 +412,8 @@ public class BoardView extends View {
                 float cx = left + cellSize / 2f;
                 float cy = top + cellSize / 2f;
                 switch (cell) {
-                    case MISS:
-                        drawRipples(canvas, cx, cy);
-                        break;
-                    case SUNK:
+                    case MISS -> drawRipples(canvas, cx, cy);
+                    case SUNK -> {
                         if (mode == Mode.ENEMY) {
                             float inset = 1.2f * density;
                             tmpRect.set(left + inset, top + inset,
@@ -424,12 +422,9 @@ public class BoardView extends View {
                                     sunkPatchPaint);
                         }
                         drawFire(canvas, cx, cy);
-                        break;
-                    case HIT:
-                        drawFire(canvas, cx, cy);
-                        break;
-                    default:
-                        break;
+                    }
+                    case HIT -> drawFire(canvas, cx, cy);
+                    default -> {}
                 }
             }
         }
@@ -518,9 +513,10 @@ public class BoardView extends View {
             return false;
         }
         switch (event.getAction()) {
-            case DragEvent.ACTION_DRAG_STARTED:
+            case DragEvent.ACTION_DRAG_STARTED -> {
                 return true;
-            case DragEvent.ACTION_DRAG_LOCATION:
+            }
+            case DragEvent.ACTION_DRAG_LOCATION -> {
                 int[] cell = cellFromPoint(event.getX(), event.getY());
                 if (cell != null) {
                     previewRow = cell[0];
@@ -531,7 +527,8 @@ public class BoardView extends View {
                 }
                 invalidate();
                 return true;
-            case DragEvent.ACTION_DROP:
+            }
+            case DragEvent.ACTION_DROP -> {
                 int[] drop = cellFromPoint(event.getX(), event.getY());
                 if (drop != null && dropListener != null) {
                     dropListener.onShipDrop(draggedSize, drop[0], drop[1], draggedOrientation);
@@ -540,13 +537,16 @@ public class BoardView extends View {
                 previewCol = -1;
                 invalidate();
                 return true;
-            case DragEvent.ACTION_DRAG_ENDED:
+            }
+            case DragEvent.ACTION_DRAG_ENDED -> {
                 previewRow = -1;
                 previewCol = -1;
                 invalidate();
                 return true;
-            default:
+            }
+            default -> {
                 return true;
+            }
         }
     }
 

@@ -135,15 +135,9 @@ public class Board {
             return;
         }
         switch (result) {
-            case WATER:
-                grid[r][c] = Cell.MISS;
-                break;
-            case HIT:
-                grid[r][c] = Cell.HIT;
-                break;
-            case SUNK:
-                grid[r][c] = Cell.SUNK;
-                break;
+            case WATER -> grid[r][c] = Cell.MISS;
+            case HIT -> grid[r][c] = Cell.HIT;
+            case SUNK -> grid[r][c] = Cell.SUNK;
         }
     }
 
@@ -153,6 +147,14 @@ public class Board {
         }
         Cell cell = grid[r][c];
         return cell == Cell.MISS || cell == Cell.HIT || cell == Cell.SUNK;
+    }
+
+    public List<int[]> getShipPositionsAt(int r, int c) {
+        Ship s = findShip(r, c);
+        if (s == null) {
+            return Collections.emptyList();
+        }
+        return s.positions();
     }
 
     private Ship findShip(int r, int c) {

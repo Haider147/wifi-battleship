@@ -9,7 +9,9 @@ public enum MessageType {
     RESULT("RESULT"),
     FIRST_TURN("FIRST_TURN"),
     GAMEOVER("GAMEOVER"),
-    BYE("BYE");
+    BYE("BYE"),
+    PING("PING"),
+    PONG("PONG");
 
     private final String code;
 

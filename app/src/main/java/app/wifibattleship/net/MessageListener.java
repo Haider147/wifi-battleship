@@ -4,5 +4,5 @@ public interface MessageListener {
 
     void onMessageReceived(Message message);
 
-    void onDisconnected();
+    void onDisconnected(boolean peerTimedOut);
 }

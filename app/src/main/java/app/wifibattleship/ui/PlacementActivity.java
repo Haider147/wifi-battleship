@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
@@ -76,6 +77,15 @@ public class PlacementActivity extends AppCompatActivity {
         });
 
         btnReady.setOnClickListener(v -> onReady());
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                GameSession.get().getController().leave();
+                GameSession.reset();
+                finish();
+            }
+        });
 
         wireController();
     }
@@ -193,14 +203,11 @@ public class PlacementActivity extends AppCompatActivity {
     }
 
     private int shipArtRes(int size) {
-        switch (size) {
-            case 4:
-                return R.drawable.ic_ship_battleship;
-            case 3:
-                return R.drawable.ic_ship_cruiser;
-            default:
-                return R.drawable.ic_ship_destroyer;
-        }
+        return switch (size) {
+            case 4 -> R.drawable.ic_ship_battleship;
+            case 3 -> R.drawable.ic_ship_cruiser;
+            default -> R.drawable.ic_ship_destroyer;
+        };
     }
 
     @android.annotation.SuppressLint("ClickableViewAccessibility")
@@ -268,14 +275,11 @@ public class PlacementActivity extends AppCompatActivity {
     }
 
     private String shipLabel(int size) {
-        switch (size) {
-            case 4:
-                return getString(R.string.ship_4);
-            case 3:
-                return getString(R.string.ship_3);
-            default:
-                return getString(R.string.ship_2);
-        }
+        return switch (size) {
+            case 4 -> getString(R.string.ship_4);
+            case 3 -> getString(R.string.ship_3);
+            default -> getString(R.string.ship_2);
+        };
     }
 
     private int dp(int v) {
@@ -286,8 +290,8 @@ public class PlacementActivity extends AppCompatActivity {
     protected void onDestroy() {
         destroyed = true;
         GameController controller = GameSession.get().getController();
-        if (controller != null) {
-            controller.setListener(null);
+        if (controller != null && controllerListener != null) {
+            controller.clearListener(controllerListener);
         }
         super.onDestroy();
     }

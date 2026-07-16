@@ -138,7 +138,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
             public void onFailed(String reason) {
                 if (destroyed) return;
                 progressBar.setVisibility(View.GONE);
-                tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
+                tvStatus.setText(getString(R.string.err_connection_reason, reason));
                 btnRetry.setEnabled(true);
             }
         });
@@ -205,7 +205,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
                 connecting = false;
                 if (destroyed) return;
                 progressBar.setVisibility(View.GONE);
-                tvStatus.setText(getString(R.string.err_connection) + "\n" + reason);
+                tvStatus.setText(getString(R.string.err_connection_reason, reason));
                 Toast.makeText(ClientDiscoverActivity.this,
                         R.string.err_connection, Toast.LENGTH_SHORT).show();
             }

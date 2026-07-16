@@ -2,8 +2,12 @@ package app.wifibattleship.net;
 
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Message {
 
@@ -17,6 +21,7 @@ public class Message {
     private static final String FIELD_RESULT = "result";
     private static final String FIELD_ROLE = "role";
     private static final String FIELD_WINNER = "winner";
+    private static final String FIELD_CELLS = "cells";
 
     private final MessageType type;
     private int x = -1;
@@ -24,6 +29,7 @@ public class Message {
     private String result;
     private String role;
     private String winner;
+    private List<int[]> cells;
 
     private Message(MessageType type) {
         this.type = type;
@@ -54,6 +60,12 @@ public class Message {
         return m;
     }
 
+    public static Message result(int x, int y, String result, List<int[]> cells) {
+        Message m = result(x, y, result);
+        m.cells = cells;
+        return m;
+    }
+
     public static Message firstTurn(String role) {
         Message m = new Message(MessageType.FIRST_TURN);
         m.role = role;
@@ -68,6 +80,14 @@ public class Message {
 
     public static Message bye() {
         return new Message(MessageType.BYE);
+    }
+
+    public static Message ping() {
+        return new Message(MessageType.PING);
+    }
+
+    public static Message pong() {
+        return new Message(MessageType.PONG);
     }
 
     public static Message fromJson(String json) throws JSONException {
@@ -86,6 +106,20 @@ public class Message {
         if (o.has(FIELD_RESULT)) m.result = o.optString(FIELD_RESULT, null);
         if (o.has(FIELD_ROLE)) m.role = o.optString(FIELD_ROLE, null);
         if (o.has(FIELD_WINNER)) m.winner = o.optString(FIELD_WINNER, null);
+        if (o.has(FIELD_CELLS)) {
+            JSONArray arr = o.getJSONArray(FIELD_CELLS);
+            List<int[]> cells = new ArrayList<>(arr.length());
+            for (int i = 0; i < arr.length(); i++) {
+                JSONArray p = arr.getJSONArray(i);
+                int cr = p.getInt(0);
+                int cc = p.getInt(1);
+                if (cr < 0 || cr >= 8 || cc < 0 || cc >= 8) {
+                    throw new JSONException("cell out of range: " + cr + "," + cc);
+                }
+                cells.add(new int[]{cr, cc});
+            }
+            m.cells = cells;
+        }
         if (m.x != -1 && (m.x < 0 || m.x >= 8)) {
             throw new JSONException("x out of range: " + m.x);
         }
@@ -105,6 +139,16 @@ public class Message {
             if (result != null) o.put(FIELD_RESULT, result);
             if (role != null) o.put(FIELD_ROLE, role);
             if (winner != null) o.put(FIELD_WINNER, winner);
+            if (cells != null && !cells.isEmpty()) {
+                JSONArray arr = new JSONArray();
+                for (int[] p : cells) {
+                    JSONArray cell = new JSONArray();
+                    cell.put(p[0]);
+                    cell.put(p[1]);
+                    arr.put(cell);
+                }
+                o.put(FIELD_CELLS, arr);
+            }
         } catch (JSONException e) {
             Log.e(TAG, "toJson error", e);
         }
@@ -133,6 +177,10 @@ public class Message {
 
     public String getWinner() {
         return winner;
+    }
+
+    public List<int[]> getCells() {
+        return cells;
     }
 
     @Override

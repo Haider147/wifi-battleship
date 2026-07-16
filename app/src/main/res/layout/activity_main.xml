@@ -39,14 +39,6 @@
                 android:textSize="21sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/main_subtitle"
-                android:textColor="#D9FFFFFF"
-                android:textSize="12sp" />
-
         </LinearLayout>
 
     </LinearLayout>
@@ -81,15 +73,6 @@
                 android:textColor="@color/ok_green_dark"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvWifiDesc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:text="@string/wifi_ok_desc"
-                android:textColor="@color/text_muted"
-                android:textSize="12sp" />
 
         </LinearLayout>
 

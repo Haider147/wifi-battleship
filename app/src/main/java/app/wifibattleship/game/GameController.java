@@ -44,6 +44,9 @@ public class GameController implements MessageListener {
     private volatile Listener listener;
 
     public void setRole(Role role) {
+        if (role == null) {
+            throw new IllegalArgumentException("role must not be null");
+        }
         this.myRole = role;
     }
 
@@ -57,6 +60,12 @@ public class GameController implements MessageListener {
 
     public void setListener(Listener listener) {
         this.listener = listener;
+    }
+
+    public void clearListener(Listener expected) {
+        if (this.listener == expected) {
+            this.listener = null;
+        }
     }
 
     public Board getMyBoard() {
@@ -110,7 +119,9 @@ public class GameController implements MessageListener {
     }
 
     public void leave() {
-        send(Message.bye());
+        if (sender != null) {
+            sender.sendBlocking(Message.bye());
+        }
     }
 
     @Override
@@ -119,38 +130,27 @@ public class GameController implements MessageListener {
             return;
         }
         switch (msg.getType()) {
-            case READY:
+            case READY -> {
                 opponentReady = true;
                 notifyOpponentReady();
                 maybeStartGame();
-                break;
-            case FIRST_TURN:
-                handleFirstTurn(msg.getRole());
-                break;
-            case ATTACK:
-                handleIncomingAttack(msg.getX(), msg.getY());
-                break;
-            case RESULT:
-                handleAttackResult(msg.getX(), msg.getY(), msg.getResult());
-                break;
-            case GAMEOVER:
-                handleGameOver(msg.getWinner());
-                break;
-            case BYE:
-                notifyDisconnected(true);
-                break;
-            default:
-                break;
+            }
+            case FIRST_TURN -> handleFirstTurn(msg.getRole());
+            case ATTACK -> handleIncomingAttack(msg.getX(), msg.getY());
+            case RESULT -> handleAttackResult(msg.getX(), msg.getY(), msg.getResult(), msg.getCells());
+            case GAMEOVER -> handleGameOver(msg.getWinner());
+            case BYE -> notifyDisconnected(true);
+            default -> {}
         }
     }
 
     @Override
-    public void onDisconnected() {
-        notifyDisconnected(false);
+    public void onDisconnected(boolean peerTimedOut) {
+        notifyDisconnected(peerTimedOut);
     }
 
     private void maybeStartGame() {
-        if (phase != GamePhase.PLACEMENT) {
+        if (phase != GamePhase.PLACEMENT || myRole == null) {
             return;
         }
         if (!localReady || !opponentReady) {
@@ -189,7 +189,11 @@ public class GameController implements MessageListener {
             return;
         }
         AttackResult result = myBoard.receiveAttack(x, y);
-        send(Message.result(x, y, result.name()));
+        if (result == AttackResult.SUNK) {
+            send(Message.result(x, y, result.name(), myBoard.getShipPositionsAt(x, y)));
+        } else {
+            send(Message.result(x, y, result.name()));
+        }
         notifyIncomingAttack(x, y);
         notifyMyBoardChanged();
 
@@ -205,7 +209,7 @@ public class GameController implements MessageListener {
         }
     }
 
-    private void handleAttackResult(int x, int y, String resultStr) {
+    private void handleAttackResult(int x, int y, String resultStr, java.util.List<int[]> cells) {
         if (phase != GamePhase.PLAYING) {
             return;
         }
@@ -217,6 +221,11 @@ public class GameController implements MessageListener {
             return;
         }
         enemyBoard.markShotResult(x, y, result);
+        if (result == AttackResult.SUNK && cells != null) {
+            for (int[] p : cells) {
+                enemyBoard.markShotResult(p[0], p[1], AttackResult.SUNK);
+            }
+        }
         notifyAttackResult(x, y, result);
         notifyEnemyBoardChanged();
 
@@ -226,11 +235,8 @@ public class GameController implements MessageListener {
                 phase = GamePhase.ENDED;
                 notifyPhaseChanged();
                 notifyGameOver(true);
-                return;
             }
         }
-        myTurn = true;
-        notifyTurnChanged();
     }
 
     private void handleGameOver(String winnerStr) {

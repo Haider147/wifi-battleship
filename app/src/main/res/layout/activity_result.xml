@@ -85,18 +85,20 @@
 
                 <TextView
                     android:id="@+id/tvResult"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:gravity="center"
                     android:textColor="@color/navy"
-                    android:textSize="32sp"
+                    android:textSize="26sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvResultDesc"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
+                    android:gravity="center"
                     android:textColor="@color/text_muted"
                     android:textSize="12.5sp" />
 

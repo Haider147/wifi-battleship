@@ -23,6 +23,7 @@ import app.wifibattleship.game.GameController;
 import app.wifibattleship.game.GamePhase;
 import app.wifibattleship.ui.view.BoardView;
 
+@SuppressWarnings("deprecation")
 public class GameActivity extends AppCompatActivity {
 
     private BoardView boardOwn;
@@ -33,6 +34,7 @@ public class GameActivity extends AppCompatActivity {
     private View turnBanner;
     private boolean ended = false;
     private boolean localWon = false;
+    private int endReason = ResultActivity.REASON_NORMAL;
     private boolean destroyed = false;
     private GameController.Listener controllerListener;
     private BroadcastReceiver p2pReceiver;
@@ -107,20 +109,21 @@ public class GameActivity extends AppCompatActivity {
                     int resId;
                     int color;
                     switch (result) {
-                        case HIT:
+                        case HIT -> {
                             resId = R.string.result_hit;
                             color = R.color.hit;
-                            break;
-                        case SUNK:
+                        }
+                        case SUNK -> {
                             resId = R.string.result_sunk;
                             color = R.color.univalle_red;
-                            break;
-                        default:
+                        }
+                        default -> {
                             resId = R.string.result_water;
                             color = R.color.text_muted;
-                            break;
+                        }
                     }
-                    tvLastResult.setText(getString(resId) + " — " + BoardView.cellLabel(x, y));
+                    tvLastResult.setText(getString(R.string.result_with_cell,
+                            getString(resId), BoardView.cellLabel(x, y)));
                     tvLastResult.setTextColor(getColor(color));
                 });
             }
@@ -130,6 +133,7 @@ public class GameActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (destroyed) return;
                     localWon = iWon;
+                    endReason = ResultActivity.REASON_NORMAL;
                     if (!ended) {
                         ended = true;
                         goToResult();
@@ -145,15 +149,11 @@ public class GameActivity extends AppCompatActivity {
                     tvConnection.setTextColor(getColor(R.color.accent));
                     if (!ended) {
                         ended = true;
-                        if (voluntaryExit) {
-                            localWon = false;
-                            goToResult();
-                        } else {
-                            Toast.makeText(GameActivity.this, R.string.err_disconnected,
-                                    Toast.LENGTH_LONG).show();
-                            localWon = false;
-                            goToResult();
-                        }
+                        localWon = false;
+                        endReason = voluntaryExit
+                                ? ResultActivity.REASON_ENEMY_LEFT
+                                : ResultActivity.REASON_CONN_LOST;
+                        goToResult();
                     }
                 });
             }
@@ -164,7 +164,12 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void handleOnBackPressed() {
                 GameSession.get().getController().leave();
-                finish();
+                if (!ended) {
+                    ended = true;
+                    localWon = false;
+                    endReason = ResultActivity.REASON_NORMAL;
+                    goToResult();
+                }
             }
         });
 
@@ -178,6 +183,9 @@ public class GameActivity extends AppCompatActivity {
                 if (info != null && !info.isConnected()) {
                     tvConnection.setText(R.string.status_disconnected);
                     tvConnection.setTextColor(getColor(R.color.accent));
+                } else if (info != null && info.isConnected()) {
+                    tvConnection.setText(R.string.status_connected);
+                    tvConnection.setTextColor(getColor(R.color.ok_green_dark));
                 }
             }
         };
@@ -232,6 +240,7 @@ public class GameActivity extends AppCompatActivity {
     private void goToResult() {
         Intent intent = new Intent(this, ResultActivity.class);
         intent.putExtra(ResultActivity.EXTRA_I_WON, localWon);
+        intent.putExtra(ResultActivity.EXTRA_REASON, endReason);
         startActivity(intent);
         finish();
     }
@@ -247,12 +256,10 @@ public class GameActivity extends AppCompatActivity {
             p2pReceiver = null;
         }
         GameController controller = GameSession.get().getController();
-        if (controller != null) {
-            controller.setListener(null);
+        if (controller != null && controllerListener != null) {
+            controller.clearListener(controllerListener);
         }
-        if (GameSession.get().getConnection() != null) {
-            GameSession.get().getConnection().close();
-        }
+        GameSession.reset();
         super.onDestroy();
     }
 }

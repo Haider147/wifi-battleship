@@ -2,6 +2,7 @@ package app.wifibattleship.net;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,6 +13,9 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GameConnection implements MessageSender {
@@ -31,6 +35,15 @@ public class GameConnection implements MessageSender {
     private volatile BufferedWriter writer;
     private Thread readerThread;
     private volatile boolean started;
+    private volatile long lastReceivedMs;
+    private Thread heartbeatThread;
+    private static final long PING_INTERVAL_MS = 2000;
+    private static final long TIMEOUT_MS = 6000;
+    private final ExecutorService sendExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "wbs-writer");
+        t.setDaemon(true);
+        return t;
+    });
 
     public GameConnection(Socket socket, MessageListener listener) {
         this(socket, listener, null);
@@ -64,13 +77,36 @@ public class GameConnection implements MessageSender {
             w = new BufferedWriter(new OutputStreamWriter(
                     socket.getOutputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            notifyDisconnected();
+            notifyDisconnected(false);
             return;
         }
         writer = w;
+        lastReceivedMs = System.currentTimeMillis();
         readerThread = new Thread(this::readerLoop, "wbs-reader");
         readerThread.setDaemon(true);
         readerThread.start();
+        heartbeatThread = new Thread(this::heartbeatLoop, "wbs-heartbeat");
+        heartbeatThread.setDaemon(true);
+        heartbeatThread.start();
+    }
+
+    private void heartbeatLoop() {
+        while (!closed.get()) {
+            try {
+                Thread.sleep(PING_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                return;
+            }
+            if (closed.get()) {
+                return;
+            }
+            if (System.currentTimeMillis() - lastReceivedMs > TIMEOUT_MS) {
+                Log.w("wbs-heartbeat", "no data received in " + TIMEOUT_MS + "ms, closing");
+                notifyDisconnected(false);
+                return;
+            }
+            send(Message.ping());
+        }
     }
 
     private void readerLoop() {
@@ -79,7 +115,7 @@ public class GameConnection implements MessageSender {
             reader = new BufferedReader(new InputStreamReader(
                     socket.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            notifyDisconnected();
+            notifyDisconnected(false);
             return;
         }
         try {
@@ -96,8 +132,16 @@ public class GameConnection implements MessageSender {
                 try {
                     msg = Message.fromJson(line);
                 } catch (Exception e) {
-                    main.post(this::notifyDisconnected);
-                    return;
+                    Log.w("wbs-reader", "skip malformed line", e);
+                    continue;
+                }
+                lastReceivedMs = System.currentTimeMillis();
+                if (msg.getType() == MessageType.PING) {
+                    send(Message.pong());
+                    continue;
+                }
+                if (msg.getType() == MessageType.PONG) {
+                    continue;
                 }
                 final MessageListener l = listener;
                 if (l != null) {
@@ -111,7 +155,7 @@ public class GameConnection implements MessageSender {
             }
         } catch (IOException e) {
         } finally {
-            notifyDisconnected();
+            notifyDisconnected(false);
         }
     }
 
@@ -125,17 +169,36 @@ public class GameConnection implements MessageSender {
             return;
         }
         final String line = message.toJson();
-        synchronized (this) {
-            if (closed.get()) {
-                return;
-            }
-            try {
-                w.write(line);
+        try {
+            sendExecutor.execute(() -> {
+                try {
+                    w.write(line);
+                    w.write('\n');
+                    w.flush();
+                } catch (IOException e) {
+                    notifyDisconnected(false);
+                }
+            });
+        } catch (RejectedExecutionException ignored) {
+        }
+    }
+
+    @Override
+    public void sendBlocking(Message message) {
+        if (closed.get() || message == null) {
+            return;
+        }
+        final BufferedWriter w = writer;
+        if (w == null) {
+            return;
+        }
+        try {
+            synchronized (w) {
+                w.write(message.toJson());
                 w.write('\n');
                 w.flush();
-            } catch (IOException e) {
-                notifyDisconnected();
             }
+        } catch (IOException ignored) {
         }
     }
 
@@ -147,6 +210,21 @@ public class GameConnection implements MessageSender {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
+        try {
+            sendExecutor.execute(this::closeSockets);
+        } catch (RejectedExecutionException e) {
+            closeSockets();
+        }
+        sendExecutor.shutdown();
+        if (readerThread != null) {
+            readerThread.interrupt();
+        }
+        if (heartbeatThread != null) {
+            heartbeatThread.interrupt();
+        }
+    }
+
+    private void closeSockets() {
         try {
             if (!socket.isClosed()) {
                 socket.shutdownInput();
@@ -161,31 +239,29 @@ public class GameConnection implements MessageSender {
             } catch (IOException ignored) {
             }
         }
-        if (readerThread != null) {
-            readerThread.interrupt();
-        }
     }
 
-    private void notifyDisconnected() {
-        if (!closed.compareAndSet(false, true)) {
-            return;
-        }
-        try {
-            if (!socket.isClosed()) {
-                socket.close();
-            }
-        } catch (IOException ignored) {
-        }
-        if (hostServerSocket != null && !hostServerSocket.isClosed()) {
+    private void notifyDisconnected(boolean peerTimedOut) {
+        boolean wasOpen = closed.compareAndSet(false, true);
+        if (wasOpen) {
             try {
-                hostServerSocket.close();
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
             } catch (IOException ignored) {
             }
+            if (hostServerSocket != null && !hostServerSocket.isClosed()) {
+                try {
+                    hostServerSocket.close();
+                } catch (IOException ignored) {
+                }
+            }
+            sendExecutor.shutdown();
         }
         main.post(() -> {
             MessageListener current = listener;
             if (current != null) {
-                current.onDisconnected();
+                current.onDisconnected(peerTimedOut);
             }
         });
     }

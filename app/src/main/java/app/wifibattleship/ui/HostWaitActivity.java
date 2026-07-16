@@ -119,7 +119,7 @@ public class HostWaitActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (destroyed) return;
-                    tvInfo.setText("Partida: " + name + " — Puerto: " + port);
+                    tvInfo.setText(getString(R.string.host_info, name, port));
                 });
 
                 p2p = GameSession.get().getWifiDirectHelper(this);
@@ -155,6 +155,9 @@ public class HostWaitActivity extends AppCompatActivity {
                             return;
                         }
                         accepted = true;
+                        if (p2p != null) {
+                            p2p.stopHosting();
+                        }
                         GameSession.get().setConnection(connection);
                         GameSession.get().getController();
                         connection.start();
@@ -172,14 +175,14 @@ public class HostWaitActivity extends AppCompatActivity {
                     public void onFailed(String reason) {
                         runOnUiThread(() -> {
                             if (destroyed) return;
-                            showError(getString(R.string.err_connection) + "\n" + reason);
+                            showError(getString(R.string.err_connection_reason, reason));
                         });
                     }
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
                     if (destroyed) return;
-                    showError(getString(R.string.err_connection) + "\n" + e.getMessage());
+                    showError(getString(R.string.err_connection_msg, e.getMessage()));
                 });
             }
         }, "wbs-host");

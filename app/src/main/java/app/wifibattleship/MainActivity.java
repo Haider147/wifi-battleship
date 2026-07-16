@@ -21,7 +21,6 @@ import app.wifibattleship.ui.HostWaitActivity;
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvWifiStatus;
-    private TextView tvWifiDesc;
     private Button btnStart;
     private View cardHost;
     private View cardClient;
@@ -36,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tvWifiStatus = findViewById(R.id.tvWifiStatus);
-        tvWifiDesc = findViewById(R.id.tvWifiDesc);
         btnStart = findViewById(R.id.btnStart);
         cardHost = findViewById(R.id.cardHost);
         cardClient = findViewById(R.id.cardClient);
@@ -94,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
         if (ready) {
             tvWifiStatus.setText(R.string.wifi_ok_title);
             tvWifiStatus.setTextColor(ContextCompat.getColor(this, R.color.ok_green_dark));
-            tvWifiDesc.setText(R.string.wifi_ok_desc);
             wifiBanner.setBackgroundResource(R.drawable.bg_status_card_ok);
             wifiBanner.setOnClickListener(null);
             wifiBanner.setClickable(false);
@@ -102,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             tvWifiStatus.setText(R.string.wifi_off_title);
             tvWifiStatus.setTextColor(ContextCompat.getColor(this, R.color.err_text));
-            tvWifiDesc.setText(R.string.wifi_off_desc);
             wifiBanner.setBackgroundResource(R.drawable.bg_status_card_err);
             wifiBanner.setOnClickListener(v -> promptEnableWifi());
             btnStart.setEnabled(false);

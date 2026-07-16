@@ -15,6 +15,10 @@ import app.wifibattleship.R;
 public class ResultActivity extends AppCompatActivity {
 
     public static final String EXTRA_I_WON = "extra_i_won";
+    public static final String EXTRA_REASON = "extra_reason";
+    public static final int REASON_NORMAL = 0;
+    public static final int REASON_ENEMY_LEFT = 1;
+    public static final int REASON_CONN_LOST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,16 +26,34 @@ public class ResultActivity extends AppCompatActivity {
         setContentView(R.layout.activity_result);
 
         boolean iWon = getIntent().getBooleanExtra(EXTRA_I_WON, false);
+        int reason = getIntent().getIntExtra(EXTRA_REASON, REASON_NORMAL);
+
+        int titleRes;
+        int descRes;
+        int stripRes;
+
+        if (reason == REASON_ENEMY_LEFT) {
+            titleRes = R.string.enemy_left;
+            descRes = R.string.enemy_left_desc;
+            stripRes = R.drawable.bg_verdict_lose;
+        } else if (reason == REASON_CONN_LOST) {
+            titleRes = R.string.conn_lost;
+            descRes = R.string.conn_lost_desc;
+            stripRes = R.drawable.bg_verdict_lose;
+        } else {
+            titleRes = iWon ? R.string.win : R.string.lose;
+            descRes = iWon ? R.string.win_desc : R.string.lose_desc;
+            stripRes = iWon ? R.drawable.bg_verdict_win : R.drawable.bg_verdict_lose;
+        }
 
         TextView tvResult = findViewById(R.id.tvResult);
-        tvResult.setText(iWon ? R.string.win : R.string.lose);
+        tvResult.setText(titleRes);
 
         TextView tvResultDesc = findViewById(R.id.tvResultDesc);
-        tvResultDesc.setText(iWon ? R.string.win_desc : R.string.lose_desc);
+        tvResultDesc.setText(descRes);
 
         View strip = findViewById(R.id.vVerdictStrip);
-        strip.setBackgroundResource(iWon
-                ? R.drawable.bg_verdict_win : R.drawable.bg_verdict_lose);
+        strip.setBackgroundResource(stripRes);
 
         Button btnAgain = findViewById(R.id.btnAgain);
         Button btnExit = findViewById(R.id.btnExit);
@@ -46,11 +68,5 @@ public class ResultActivity extends AppCompatActivity {
             GameSession.reset();
             finishAffinity();
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        GameSession.reset();
     }
 }

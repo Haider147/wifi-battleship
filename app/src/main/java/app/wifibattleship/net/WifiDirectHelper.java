@@ -30,6 +30,7 @@ import app.wifibattleship.game.GameConfig;
  * o ACCESS_FINE_LOCATION (Android 8-12); las Activities lo piden antes de llamar.
  */
 @SuppressLint("MissingPermission")
+@SuppressWarnings("deprecation")
 public class WifiDirectHelper {
 
     public interface HostCallback {
@@ -84,6 +85,9 @@ public class WifiDirectHelper {
             ch = manager.initialize(this.context, Looper.getMainLooper(), null);
         }
         this.channel = ch;
+    }
+
+    private void ensureReceiver() {
         registerReceiver();
     }
 
@@ -102,6 +106,7 @@ public class WifiDirectHelper {
             callback.onFailed("WiFi Direct no disponible en este dispositivo.");
             return;
         }
+        ensureReceiver();
         // removeGroup preventivo: limpia grupos zombis de partidas anteriores.
         manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
             @Override
@@ -177,6 +182,7 @@ public class WifiDirectHelper {
             callback.onFailed("WiFi Direct no disponible en este dispositivo.");
             return;
         }
+        ensureReceiver();
         discoveryCallback = callback;
         txtPorts.clear();
 
@@ -258,6 +264,7 @@ public class WifiDirectHelper {
             callback.onFailed("WiFi Direct no disponible en este dispositivo.");
             return;
         }
+        ensureReceiver();
         pendingConnect = callback;
 
         WifiP2pConfig config = new WifiP2pConfig();
@@ -315,6 +322,17 @@ public class WifiDirectHelper {
         }
     }
 
+    /** Limpia el servicio DNS-SD anunciado por el host (tras aceptar una conexión). */
+    public void stopHosting() {
+        if (isAvailable()) {
+            try {
+                manager.clearLocalServices(channel, null);
+            } catch (Exception e) {
+                Log.w(TAG, "stopHosting", e);
+            }
+        }
+    }
+
     // -------------------------------------------------------------- Limpieza
 
     /** Desmonta todo: servicios, búsquedas, conexión pendiente y grupo P2P. */
@@ -356,14 +374,10 @@ public class WifiDirectHelper {
     }
 
     private static String reasonText(int reason) {
-        switch (reason) {
-            case WifiP2pManager.P2P_UNSUPPORTED:
-                return "WiFi Direct no soportado";
-            case WifiP2pManager.BUSY:
-                return "sistema ocupado, reintenta";
-            case WifiP2pManager.ERROR:
-            default:
-                return "error interno (" + reason + ")";
-        }
+        return switch (reason) {
+            case WifiP2pManager.P2P_UNSUPPORTED -> "WiFi Direct no soportado";
+            case WifiP2pManager.BUSY -> "sistema ocupado, reintenta";
+            default -> "error interno (" + reason + ")";
+        };
     }
 }

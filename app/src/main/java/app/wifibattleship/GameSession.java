@@ -9,7 +9,7 @@ import java.net.ServerSocket;
 
 public final class GameSession {
 
-    private static GameSession instance;
+    private static volatile GameSession instance;
 
     private Role role;
     private GameConnection connection;
@@ -21,14 +21,14 @@ public final class GameSession {
     private GameSession() {
     }
 
-    public static GameSession get() {
+    public static synchronized GameSession get() {
         if (instance == null) {
             instance = new GameSession();
         }
         return instance;
     }
 
-    public static void reset() {
+    public static synchronized void reset() {
         if (instance != null) {
             instance.clear();
             instance = null;
