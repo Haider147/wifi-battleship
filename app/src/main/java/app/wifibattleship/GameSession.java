@@ -16,7 +16,6 @@ public final class GameSession {
     private GameController controller;
     private WifiDirectHelper wifiDirectHelper;
     private ServerSocket serverSocket;
-    private String serviceName;
 
     private GameSession() {
     }
@@ -35,16 +34,8 @@ public final class GameSession {
         }
     }
 
-    public Role getRole() {
-        return role;
-    }
-
     public void setRole(Role role) {
         this.role = role;
-    }
-
-    public GameConnection getConnection() {
-        return connection;
     }
 
     public void setConnection(GameConnection connection) {
@@ -70,20 +61,8 @@ public final class GameSession {
         return wifiDirectHelper;
     }
 
-    public ServerSocket getServerSocket() {
-        return serverSocket;
-    }
-
     public void setServerSocket(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
     }
 
     public void clear() {
@@ -105,6 +84,5 @@ public final class GameSession {
         controller = null;
         connection = null;
         role = null;
-        serviceName = null;
     }
 }

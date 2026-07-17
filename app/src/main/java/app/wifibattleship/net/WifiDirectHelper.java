@@ -25,7 +25,6 @@ import app.wifibattleship.game.GameConfig;
  * El Host crea el grupo (group owner) y anuncia la partida por DNS-SD sobre P2P;
  * el Cliente descubre partidas, se une al grupo y obtiene la IP del group owner
  * para abrir el socket TCP de GameConnection.
- *
  * Las llamadas a WifiP2pManager exigen el permiso NEARBY_WIFI_DEVICES (Android 13+)
  * o ACCESS_FINE_LOCATION (Android 8-12); las Activities lo piden antes de llamar.
  */

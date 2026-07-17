@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_grid"
@@ -39,14 +40,6 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
-                android:text="@string/host_sub"
-                android:textColor="#D9FFFFFF"
-                android:textSize="11sp" />
-
         </LinearLayout>
 
     </LinearLayout>
@@ -73,6 +66,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <FrameLayout
@@ -89,7 +83,8 @@
                         android:text="1"
                         android:textColor="@color/white"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
 
                     <ProgressBar
                         android:id="@+id/pbStep1"
@@ -117,13 +112,6 @@
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/host_step1_desc"
-                        android:textColor="@color/text_muted"
-                        android:textSize="11.5sp" />
-
                 </LinearLayout>
 
             </LinearLayout>
@@ -133,6 +121,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <FrameLayout
@@ -149,7 +138,8 @@
                         android:text="2"
                         android:textColor="@color/white"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
 
                     <ProgressBar
                         android:id="@+id/pbStep2"
@@ -177,13 +167,6 @@
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/host_step2_desc"
-                        android:textColor="@color/text_muted"
-                        android:textSize="11.5sp" />
-
                 </LinearLayout>
 
             </LinearLayout>
@@ -193,6 +176,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <FrameLayout
@@ -209,7 +193,8 @@
                         android:text="3"
                         android:textColor="@color/white"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
 
                     <ProgressBar
                         android:id="@+id/pbStep3"
@@ -236,13 +221,6 @@
                         android:textColor="@color/text_muted_light"
                         android:textSize="13sp"
                         android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/host_step3_desc"
-                        android:textColor="@color/text_muted"
-                        android:textSize="11.5sp" />
 
                 </LinearLayout>
 
@@ -278,7 +256,8 @@
         <Space
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            tools:ignore="NestedWeights" />
 
         <Button
             android:id="@+id/btnCancel"

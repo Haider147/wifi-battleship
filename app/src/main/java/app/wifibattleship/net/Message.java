@@ -2,6 +2,8 @@ package app.wifibattleship.net;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,9 +105,9 @@ public class Message {
         Message m = new Message(type);
         if (o.has(FIELD_X)) m.x = o.optInt(FIELD_X, -1);
         if (o.has(FIELD_Y)) m.y = o.optInt(FIELD_Y, -1);
-        if (o.has(FIELD_RESULT)) m.result = o.optString(FIELD_RESULT, null);
-        if (o.has(FIELD_ROLE)) m.role = o.optString(FIELD_ROLE, null);
-        if (o.has(FIELD_WINNER)) m.winner = o.optString(FIELD_WINNER, null);
+        if (o.has(FIELD_RESULT)) m.result = o.optString(FIELD_RESULT);
+        if (o.has(FIELD_ROLE)) m.role = o.optString(FIELD_ROLE);
+        if (o.has(FIELD_WINNER)) m.winner = o.optString(FIELD_WINNER);
         if (o.has(FIELD_CELLS)) {
             JSONArray arr = o.getJSONArray(FIELD_CELLS);
             List<int[]> cells = new ArrayList<>(arr.length());
@@ -183,6 +185,7 @@ public class Message {
         return cells;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return toJson();

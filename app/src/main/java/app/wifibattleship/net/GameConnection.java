@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -45,11 +47,8 @@ public class GameConnection implements MessageSender {
         return t;
     });
 
-    public GameConnection(Socket socket, MessageListener listener) {
-        this(socket, listener, null);
-    }
-
-    public GameConnection(Socket socket, MessageListener listener, ServerSocket hostServerSocket) {
+    public GameConnection(Socket socket, @Nullable MessageListener listener,
+                          @Nullable ServerSocket hostServerSocket) {
         if (socket == null || !socket.isConnected()) {
             throw new IllegalArgumentException("socket is not connected");
         }
@@ -77,7 +76,7 @@ public class GameConnection implements MessageSender {
             w = new BufferedWriter(new OutputStreamWriter(
                     socket.getOutputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            notifyDisconnected(false);
+            notifyDisconnected();
             return;
         }
         writer = w;
@@ -90,6 +89,7 @@ public class GameConnection implements MessageSender {
         heartbeatThread.start();
     }
 
+    @SuppressWarnings("BusyWait")
     private void heartbeatLoop() {
         while (!closed.get()) {
             try {
@@ -102,7 +102,7 @@ public class GameConnection implements MessageSender {
             }
             if (System.currentTimeMillis() - lastReceivedMs > TIMEOUT_MS) {
                 Log.w("wbs-heartbeat", "no data received in " + TIMEOUT_MS + "ms, closing");
-                notifyDisconnected(false);
+                notifyDisconnected();
                 return;
             }
             send(Message.ping());
@@ -115,7 +115,7 @@ public class GameConnection implements MessageSender {
             reader = new BufferedReader(new InputStreamReader(
                     socket.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {
-            notifyDisconnected(false);
+            notifyDisconnected();
             return;
         }
         try {
@@ -153,9 +153,9 @@ public class GameConnection implements MessageSender {
                     });
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException ignored) {
         } finally {
-            notifyDisconnected(false);
+            notifyDisconnected();
         }
     }
 
@@ -176,7 +176,7 @@ public class GameConnection implements MessageSender {
                     w.write('\n');
                     w.flush();
                 } catch (IOException e) {
-                    notifyDisconnected(false);
+                    notifyDisconnected();
                 }
             });
         } catch (RejectedExecutionException ignored) {
@@ -200,10 +200,6 @@ public class GameConnection implements MessageSender {
             }
         } catch (IOException ignored) {
         }
-    }
-
-    public boolean isClosed() {
-        return closed.get();
     }
 
     public void close() {
@@ -241,7 +237,7 @@ public class GameConnection implements MessageSender {
         }
     }
 
-    private void notifyDisconnected(boolean peerTimedOut) {
+    private void notifyDisconnected() {
         boolean wasOpen = closed.compareAndSet(false, true);
         if (wasOpen) {
             try {
@@ -261,13 +257,13 @@ public class GameConnection implements MessageSender {
         main.post(() -> {
             MessageListener current = listener;
             if (current != null) {
-                current.onDisconnected(peerTimedOut);
+                current.onDisconnected();
             }
         });
     }
 
     public static void acceptAsHost(final ServerSocket serverSocket,
-                                    final ConnectCallback callback) {
+                                     final ConnectCallback callback) {
         Thread t = new Thread(() -> {
             try {
                 serverSocket.setSoTimeout(0);
@@ -282,16 +278,21 @@ public class GameConnection implements MessageSender {
     }
 
     public static void connectAsClient(final String host,
-                                       final int port,
-                                       final ConnectCallback callback) {
+                                        final int port,
+                                        final ConnectCallback callback) {
         Thread t = new Thread(() -> {
+            Socket s = new Socket();
             try {
-                Socket s = new Socket();
                 s.connect(new InetSocketAddress(host, port), 5000);
-                mainPost(() -> callback.onConnected(new GameConnection(s, null, null)));
             } catch (IOException e) {
+                try {
+                    s.close();
+                } catch (IOException ignored) {
+                }
                 mainPost(() -> callback.onFailed(e.getMessage()));
+                return;
             }
+            mainPost(() -> callback.onConnected(new GameConnection(s, null, null)));
         }, "wbs-client-connect");
         t.setDaemon(true);
         t.start();

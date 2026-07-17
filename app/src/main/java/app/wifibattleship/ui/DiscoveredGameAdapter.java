@@ -61,7 +61,7 @@ public class DiscoveredGameAdapter extends RecyclerView.Adapter<DiscoveredGameAd
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         DiscoveredGame game = items.get(position);
-        holder.tvName.setText(game.getName());
+        holder.tvName.setText(game.name());
         holder.tvHost.setText(game.getDeviceName());
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -80,7 +80,7 @@ public class DiscoveredGameAdapter extends RecyclerView.Adapter<DiscoveredGameAd
         return items.get(position).getDeviceAddress().hashCode();
     }
 
-    static class VH extends RecyclerView.ViewHolder {
+    public static class VH extends RecyclerView.ViewHolder {
         final TextView tvName;
         final TextView tvHost;
 

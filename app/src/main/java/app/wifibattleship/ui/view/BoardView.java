@@ -573,7 +573,6 @@ public class BoardView extends View {
         return cellSize;
     }
 
-    @SuppressWarnings("unused")
     public void resetPreview() {
         previewRow = -1;
         previewCol = -1;

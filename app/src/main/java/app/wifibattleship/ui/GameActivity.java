@@ -34,7 +34,7 @@ public class GameActivity extends AppCompatActivity {
     private View turnBanner;
     private boolean ended = false;
     private boolean localWon = false;
-    private int endReason = ResultActivity.REASON_NORMAL;
+    private boolean disconnected = false;
     private boolean destroyed = false;
     private GameController.Listener controllerListener;
     private BroadcastReceiver p2pReceiver;
@@ -133,7 +133,6 @@ public class GameActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (destroyed) return;
                     localWon = iWon;
-                    endReason = ResultActivity.REASON_NORMAL;
                     if (!ended) {
                         ended = true;
                         goToResult();
@@ -150,9 +149,7 @@ public class GameActivity extends AppCompatActivity {
                     if (!ended) {
                         ended = true;
                         localWon = false;
-                        endReason = voluntaryExit
-                                ? ResultActivity.REASON_ENEMY_LEFT
-                                : ResultActivity.REASON_CONN_LOST;
+                        disconnected = true;
                         goToResult();
                     }
                 });
@@ -167,7 +164,6 @@ public class GameActivity extends AppCompatActivity {
                 if (!ended) {
                     ended = true;
                     localWon = false;
-                    endReason = ResultActivity.REASON_NORMAL;
                     goToResult();
                 }
             }
@@ -240,7 +236,7 @@ public class GameActivity extends AppCompatActivity {
     private void goToResult() {
         Intent intent = new Intent(this, ResultActivity.class);
         intent.putExtra(ResultActivity.EXTRA_I_WON, localWon);
-        intent.putExtra(ResultActivity.EXTRA_REASON, endReason);
+        intent.putExtra(ResultActivity.EXTRA_DISCONNECTED, disconnected);
         startActivity(intent);
         finish();
     }

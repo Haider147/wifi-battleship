@@ -36,7 +36,6 @@ public class HostWaitActivity extends AppCompatActivity {
     private ProgressBar[] stepSpins;
     private boolean accepted = false;
     private boolean destroyed = false;
-    private Thread hostThread;
     private WifiDirectHelper p2p;
 
     @Override
@@ -102,7 +101,7 @@ public class HostWaitActivity extends AppCompatActivity {
     }
 
     private void startHosting() {
-        hostThread = new Thread(() -> {
+        Thread hostThread = new Thread(() -> {
             try {
                 ServerSocket server;
                 try {
@@ -115,7 +114,6 @@ public class HostWaitActivity extends AppCompatActivity {
                 GameSession.get().setServerSocket(server);
 
                 String name = NetUtils.generateServiceName();
-                GameSession.get().setServiceName(name);
 
                 runOnUiThread(() -> {
                     if (destroyed) return;

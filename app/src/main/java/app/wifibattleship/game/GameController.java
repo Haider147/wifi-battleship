@@ -5,7 +5,6 @@ import java.util.Random;
 import app.wifibattleship.net.Message;
 import app.wifibattleship.net.MessageListener;
 import app.wifibattleship.net.MessageSender;
-import app.wifibattleship.net.MessageType;
 
 public class GameController implements MessageListener {
 
@@ -50,10 +49,6 @@ public class GameController implements MessageListener {
         this.myRole = role;
     }
 
-    public Role getRole() {
-        return myRole;
-    }
-
     public void setSender(MessageSender sender) {
         this.sender = sender;
     }
@@ -76,24 +71,8 @@ public class GameController implements MessageListener {
         return enemyBoard;
     }
 
-    public GamePhase getPhase() {
-        return phase;
-    }
-
     public boolean isMyTurn() {
         return myTurn;
-    }
-
-    public boolean isLocalReady() {
-        return localReady;
-    }
-
-    public boolean isOpponentReady() {
-        return opponentReady;
-    }
-
-    public int getEnemySunkCount() {
-        return enemySunkCount;
     }
 
     public void setLocalReady() {
@@ -105,17 +84,16 @@ public class GameController implements MessageListener {
         maybeStartGame();
     }
 
-    public boolean localAttack(int x, int y) {
+    public void localAttack(int x, int y) {
         if (phase != GamePhase.PLAYING || !myTurn) {
-            return false;
+            return;
         }
         if (enemyBoard.wasAlreadyAttacked(x, y)) {
-            return false;
+            return;
         }
         myTurn = false;
         notifyTurnChanged();
         send(Message.attack(x, y));
-        return true;
     }
 
     public void leave() {
@@ -145,8 +123,8 @@ public class GameController implements MessageListener {
     }
 
     @Override
-    public void onDisconnected(boolean peerTimedOut) {
-        notifyDisconnected(peerTimedOut);
+    public void onDisconnected() {
+        notifyDisconnected(false);
     }
 
     private void maybeStartGame() {

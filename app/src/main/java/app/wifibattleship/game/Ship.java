@@ -38,10 +38,6 @@ public class Ship {
         return col;
     }
 
-    public int getHitCount() {
-        return hitCount;
-    }
-
     public List<int[]> positions() {
         List<int[]> cells = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {

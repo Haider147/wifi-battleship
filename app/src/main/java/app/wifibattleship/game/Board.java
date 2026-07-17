@@ -32,10 +32,6 @@ public class Board {
         return Collections.unmodifiableList(ships);
     }
 
-    public int getShipCount() {
-        return ships.size();
-    }
-
     public boolean isValidPlacement(int row, int col, int size, Orientation orientation) {
         if (size <= 0) {
             return false;
@@ -65,7 +61,7 @@ public class Board {
         return true;
     }
 
-    public int removeShipAt(int r, int c) {
+    public void removeShipAt(int r, int c) {
         Ship target = null;
         for (Ship s : ships) {
             if (s.contains(r, c)) {
@@ -74,13 +70,12 @@ public class Board {
             }
         }
         if (target == null) {
-            return 0;
+            return;
         }
         for (int[] p : target.positions()) {
             grid[p[0]][p[1]] = Cell.WATER;
         }
         ships.remove(target);
-        return target.getSize();
     }
 
     public int getShipSizeAt(int r, int c) {

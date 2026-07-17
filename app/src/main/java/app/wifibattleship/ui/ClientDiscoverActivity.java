@@ -162,7 +162,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
             @Override
             public void onHostFound(String hostAddress) {
                 if (destroyed) return;
-                GameConnection.connectAsClient(hostAddress, game.getPort(),
+                GameConnection.connectAsClient(hostAddress, game.port(),
                         new GameConnection.ConnectCallback() {
                             @Override
                             public void onConnected(GameConnection connection) {
@@ -191,8 +191,7 @@ public class ClientDiscoverActivity extends AppCompatActivity {
                                 runOnUiThread(() -> {
                                     if (destroyed) return;
                                     progressBar.setVisibility(View.GONE);
-                                    tvStatus.setText(getString(R.string.err_connection)
-                                            + "\n" + reason);
+                                    tvStatus.setText(getString(R.string.err_connection_reason, reason));
                                     Toast.makeText(ClientDiscoverActivity.this,
                                             R.string.err_connection, Toast.LENGTH_SHORT).show();
                                 });

@@ -10,7 +10,6 @@ import android.net.wifi.p2p.WifiP2pManager;
  * Observa en vivo el estado de WiFi P2P mediante el broadcast (sticky)
  * WIFI_P2P_STATE_CHANGED_ACTION: al registrarse entrega el estado actual.
  */
-@SuppressWarnings("deprecation")
 public final class WifiStateMonitor {
 
     public interface Listener {

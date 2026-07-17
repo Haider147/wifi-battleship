@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_grid"
@@ -57,14 +58,16 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            tools:ignore="NestedWeights">
 
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/bg_cell_normal"
-                android:padding="5dp">
+                android:padding="5dp"
+                tools:ignore="UselessParent">
 
                 <app.wifibattleship.ui.view.BoardView
                     android:id="@+id/boardView"
@@ -90,7 +93,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="Orientación: Horizontal"
+            android:text="@string/orientation_horizontal"
             android:textColor="@color/navy"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -110,6 +113,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <Button
@@ -142,7 +146,8 @@
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:backgroundTint="@color/btn_red_bg"
-                app:cornerRadius="12dp" />
+                app:cornerRadius="12dp"
+                tools:ignore="ButtonStyle" />
 
         </LinearLayout>
 

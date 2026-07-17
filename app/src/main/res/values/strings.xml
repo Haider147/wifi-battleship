@@ -15,15 +15,9 @@
 
     <string name="host_waiting">Esperando conexión del cliente…</string>
     <string name="host_group_ready">Grupo WiFi Direct creado. Partida visible para otros jugadores.</string>
-    <string name="host_sub">Creando tu partida paso a paso</string>
     <string name="host_step1">Grupo WiFi Direct creado</string>
-    <string name="host_step1_desc">Tu teléfono es el punto de encuentro.</string>
     <string name="host_step2">Partida visible para otros jugadores</string>
-    <string name="host_step2_desc">El servicio ya se está anunciando.</string>
-    <string name="host_step3_desc">Pide a tu rival que elija "Cliente" en su teléfono.</string>
     <string name="client_searching">Buscando partidas por WiFi Direct…</string>
-    <string name="client_sub">Únete a una partida cercana</string>
-    <string name="client_sonar_hint">Las partidas cercanas aparecerán abajo</string>
     <string name="client_empty">No se encontraron partidas.\nVerifica que el Host ya haya iniciado.</string>
     <string name="join">Unirse</string>
     <string name="retry">Reintentar</string>
@@ -50,9 +44,7 @@
     <string name="lose">Perdiste</string>
     <string name="win_desc">Hundiste los 3 barcos enemigos</string>
     <string name="lose_desc">Tu flota fue hundida</string>
-    <string name="enemy_left">Tu enemigo se desconectó</string>
-    <string name="enemy_left_desc">La partida terminó</string>
-    <string name="conn_lost">Perdiste la conexión</string>
+    <string name="conn_lost">Se perdió la conexión</string>
     <string name="conn_lost_desc">La partida terminó</string>
     <string name="play_again">Nueva partida</string>
     <string name="exit">Salir</string>
@@ -77,6 +69,9 @@
     <string name="ship_3">Crucero (3)</string>
     <string name="ship_2">Destructor (2)</string>
     <string name="placement_hint">Toca un barco para quitarlo.</string>
+    <string name="placement_all_placed">Todos los barcos colocados. Pulsa «Listo».</string>
+    <string name="orientation_horizontal">Orientación: Horizontal</string>
+    <string name="orientation_vertical">Orientación: Vertical</string>
     <string name="placement_done">Barcos colocados. Esperando al enemigo…</string>
     <string name="opponent_ready">Enemigo listo.</string>
     <string name="err_placement">Posición no válida.</string>

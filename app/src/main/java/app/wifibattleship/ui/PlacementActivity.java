@@ -89,7 +89,6 @@ public class PlacementActivity extends AppCompatActivity {
 
         wireController();
     }
-
     private void wireController() {
         GameController controller = GameSession.get().getController();
         controllerListener = new GameController.Listener() {
@@ -157,7 +156,7 @@ public class PlacementActivity extends AppCompatActivity {
         }
         btnReady.setEnabled(traySizes.isEmpty());
         if (traySizes.isEmpty()) {
-            tvStatus.setText("Todos los barcos colocados. Pulsa «Listo».");
+            tvStatus.setText(R.string.placement_all_placed);
         } else {
             tvStatus.setText(R.string.placement_hint);
         }
@@ -165,9 +164,10 @@ public class PlacementActivity extends AppCompatActivity {
 
     private void updateOrientationLabel() {
         tvOrientation.setText(currentOrientation == Orientation.HORIZONTAL
-                ? "Orientación: Horizontal" : "Orientación: Vertical");
+                ? R.string.orientation_horizontal : R.string.orientation_vertical);
     }
 
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
     private View createChip(int size) {
         LinearLayout chip = new LinearLayout(this);
         chip.setOrientation(LinearLayout.VERTICAL);
@@ -198,7 +198,20 @@ public class PlacementActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         lp.setMarginEnd(dp(8));
         chip.setLayoutParams(lp);
-        chip.setOnTouchListener((v, event) -> onChipTouch(v, size, event));
+        chip.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                boardView.startDragMode(size);
+                boardView.setDraggedOrientation(currentOrientation);
+                ClipData clip = ClipData.newPlainText("ship", String.valueOf(size));
+                View.DragShadowBuilder shadow = new View.DragShadowBuilder(v);
+                v.startDragAndDrop(clip, shadow, null, 0);
+                return true;
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                v.performClick();
+                return true;
+            }
+            return false;
+        });
         return chip;
     }
 
@@ -208,19 +221,6 @@ public class PlacementActivity extends AppCompatActivity {
             case 3 -> R.drawable.ic_ship_cruiser;
             default -> R.drawable.ic_ship_destroyer;
         };
-    }
-
-    @android.annotation.SuppressLint("ClickableViewAccessibility")
-    private boolean onChipTouch(View v, int size, MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            boardView.startDragMode(size);
-            boardView.setDraggedOrientation(currentOrientation);
-            ClipData clip = ClipData.newPlainText("ship", String.valueOf(size));
-            View.DragShadowBuilder shadow = new View.DragShadowBuilder(v);
-            v.startDragAndDrop(clip, shadow, null, 0);
-            return true;
-        }
-        return false;
     }
 
     private void onShipDrop(int shipSize, int row, int col, Orientation orientation) {

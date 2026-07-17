@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_grid"
@@ -90,14 +91,16 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="4dp"
-            android:layout_weight="1.15">
+            android:layout_weight="1.15"
+            tools:ignore="NestedWeights">
 
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/bg_cell_normal"
-                android:padding="4dp">
+                android:padding="4dp"
+                tools:ignore="UselessParent">
 
                 <app.wifibattleship.ui.view.BoardView
                     android:id="@+id/boardEnemy"
@@ -133,14 +136,16 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="4dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            tools:ignore="NestedWeights">
 
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/bg_cell_normal"
-                android:padding="4dp">
+                android:padding="4dp"
+                tools:ignore="UselessParent">
 
                 <app.wifibattleship.ui.view.BoardView
                     android:id="@+id/boardOwn"
@@ -159,7 +164,7 @@
             android:paddingBottom="6dp"
             android:text="@string/footer_univalle"
             android:textColor="@color/text_muted_light"
-            android:textSize="10sp" />
+            android:textSize="11sp" />
 
     </LinearLayout>
 
